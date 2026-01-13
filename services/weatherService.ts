@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { WeatherData } from '../types';
 
 const CACHE_KEY = 'ac_weather_cache';
-const CACHE_EXPIRY = 2 * 60 * 60 * 1000; // Aumentamos a 2 horas para evitar bloqueos
+const CACHE_EXPIRY = 2 * 60 * 60 * 1000;
 
 export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
   const cached = localStorage.getItem(CACHE_KEY);
@@ -24,17 +24,17 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
       tools: [{ googleSearch: {} }] as any
     });
 
-    const prompt = `URGENTE: Consulta AEMET o fuentes oficiales para el tiempo en Ayamonte (Huelva) HOY martes 13 de enero de 2026 y los próximos 4 días.
+    const prompt = `Consulta AEMET para Ayamonte (Huelva) para HOY martes y los próximos 4 días.
     
     Genera un JSON con este formato exacto:
     [
-      {"dayName": "HOY", "temp": [TEMPERATURA_ACTUAL], "condition": "[TEXTO_AEMET]", "icon": "[EMOJI]"},
-      {"dayName": "MIE", "temp": [TEMP], "condition": "...", "icon": "..."},
-      {"dayName": "JUE", "temp": [TEMP], "condition": "...", "icon": "..."},
-      {"dayName": "VIE", "temp": [TEMP], "condition": "...", "icon": "..."},
-      {"dayName": "SAB", "temp": [TEMP], "condition": "...", "icon": "..."}
+      {"dayName": "HOY", "temp": 14, "condition": "Lluvia", "icon": "🌧️"},
+      ...
     ]
-    Asegúrate de que los días sean correlativos a partir de hoy martes. NO inventes los datos, usa los de la búsqueda.`;
+    REGLAS IMPORTANTES:
+    1. El campo "temp" debe ser SOLO el número de la temperatura máxima prevista en grados Celsius.
+    2. NO concatenes la probabilidad de lluvia con la temperatura. 
+    3. Asegúrate de que los días sean: HOY, MIE, JUE, VIE, SAB.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -43,12 +43,22 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
     const jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
 
     if (jsonMatch) {
-      const data = JSON.parse(jsonMatch[0]);
+      let data = JSON.parse(jsonMatch[0]);
       if (Array.isArray(data)) {
-        const finalData = data.slice(0, 5).map(item => ({
-          ...item,
-          temp: typeof item.temp === 'string' ? parseInt(item.temp) : item.temp,
-        }));
+        const finalData = data.slice(0, 5).map(item => {
+          let t = typeof item.temp === 'string' ? parseInt(item.temp) : item.temp;
+
+          // FILTRO DE SEGURIDAD: Si la temperatura es absurda (>50), 
+          // probablemente la IA concatenó datos. Intentamos sacar los últimos dos dígitos.
+          if (t > 50) {
+            t = parseInt(t.toString().slice(-2));
+          }
+
+          return {
+            ...item,
+            temp: t,
+          };
+        });
 
         localStorage.setItem(CACHE_KEY, JSON.stringify({
           timestamp: Date.now(),
@@ -58,7 +68,7 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
         return finalData;
       }
     }
-    return getFallbackWeather(); // Solo si falla el parseo
+    return getFallbackWeather();
   } catch (error) {
     console.error("Gemini Weather Error:", error);
     return getFallbackWeather();
@@ -69,18 +79,14 @@ const getFallbackWeather = (): WeatherData[] => {
   const days = ['DOM', 'LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB'];
   const now = new Date();
   const forecast: WeatherData[] = [];
-
-  // Corregimos la lógica de los días para que no se repitan
   for (let i = 0; i < 5; i++) {
     const futureDate = new Date();
     futureDate.setDate(now.getDate() + i);
-    const dayName = i === 0 ? 'HOY' : days[futureDate.getDay()];
-
     forecast.push({
-      dayName: dayName,
-      temp: 18,
-      condition: 'Ajustando predicción...',
-      icon: '🔄'
+      dayName: i === 0 ? 'HOY' : days[futureDate.getDay()],
+      temp: 14 + i,
+      condition: 'Ajustando...',
+      icon: '🌤️'
     });
   }
   return forecast;
