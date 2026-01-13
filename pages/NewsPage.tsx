@@ -68,26 +68,24 @@ const NewsPage: React.FC<Props> = ({ news }) => {
     }
   };
 
-  // Filtrar noticias: ya publicadas Y que aún no han ocurrido
+  // Filtrar noticias: que ya hayan llegado a su fecha de publicación programada
   const now = new Date();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
 
   const visibleNews = news.filter(item => {
-    // Verificar que la fecha de publicación ya haya llegado
-    const publishDate = item.publish_date ? new Date(item.publish_date) : new Date(0);
-    if (publishDate.getTime() > now.getTime()) {
-      return false; // Aún no se debe mostrar
+    // Si tiene fecha de publicación programada, verificar que ya haya pasado
+    if (item.publish_date) {
+      const pDate = new Date(item.publish_date);
+      if (pDate > now) return false;
     }
-
-    // Verificar que el evento aún no haya ocurrido
-    const eventDate = parseDate(item.publishedAt);
-    eventDate.setHours(0, 0, 0, 0);
-    return eventDate.getTime() >= today.getTime();
+    return true;
   });
 
-  // Ordenar por fecha del evento (más cercano primero)
-  const sortedNews = [...visibleNews].sort((a, b) => parseDate(a.publishedAt).getTime() - parseDate(b.publishedAt).getTime());
+  // Ordenar por fecha del evento/noticia (más reciente primero)
+  const sortedNews = [...visibleNews].sort((a, b) => {
+    const dateA = parseDate(a.publishedAt).getTime();
+    const dateB = parseDate(b.publishedAt).getTime();
+    return dateB - dateA; // Descendente: Lo más nuevo arriba
+  });
 
   // Paginación: 9 noticias por página (1 destacada + 8 en grid)
   const ITEMS_PER_PAGE = 9;
