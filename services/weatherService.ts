@@ -3,16 +3,14 @@ import { GoogleGenAI } from "@google/genai";
 import { WeatherData } from '../types';
 
 const CACHE_KEY = 'ac_weather_cache';
-const CACHE_EXPIRY = 30 * 60 * 1000; // 30 minutos
+const CACHE_EXPIRY = 30 * 60 * 1000;
 
 export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
   const cached = localStorage.getItem(CACHE_KEY);
   if (cached) {
     try {
       const { timestamp, data } = JSON.parse(cached);
-      if (Date.now() - timestamp < CACHE_EXPIRY) {
-        return data;
-      }
+      if (Date.now() - timestamp < CACHE_EXPIRY) return data;
     } catch (e) { }
   }
 
@@ -21,14 +19,10 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
 
   try {
     const ai = new GoogleGenAI({ apiKey });
-    // Usamos la sintaxis correcta: ai.models.generateContent
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
-      contents: "Search for the current weather and 5-day forecast for Ayamonte, Huelva, Spain. Provide the response as a valid JSON array of objects with keys: dayName (string: 'HOY' for the first, then 3-letter Spanish day codes like 'JUE', 'VIE', 'SAB', 'DOM', 'LUN'), temp (number, current or max temperature in Celsius), condition (short string), and icon (single weather emoji). Provide exactly 5 days.",
-      config: {
-        tools: [{ googleSearch: {} }],
-        temperature: 0.1
-      },
+      model: "gemini-pro",
+      contents: "Dame el tiempo de Ayamonte, Huelva, para los próximos 5 días en este formato JSON exacto (solo el JSON): [{\"dayName\": \"HOY\", \"temp\": 18, \"condition\": \"Soleado\", \"icon\": \"☀️\"}, ...]. Usa códigos de 3 letras para los días (LUN, MAR, etc).",
+      config: { temperature: 0.1 },
     });
 
     const text = response.text || "";
@@ -41,16 +35,10 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
           ...item,
           temp: typeof item.temp === 'string' ? parseInt(item.temp) : item.temp,
         }));
-
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          timestamp: Date.now(),
-          data: finalData
-        }));
-
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: finalData }));
         return finalData;
       }
     }
-
     return getFallbackWeather();
   } catch (error) {
     console.error("Gemini Weather Error:", error);
