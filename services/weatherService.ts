@@ -19,9 +19,17 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-    const prompt = "Dame el tiempo de Ayamonte, Huelva, para los próximos 5 días en este formato JSON exacto (solo el JSON): [{\"dayName\": \"HOY\", \"temp\": 18, \"condition\": \"Soleado\", \"icon\": \"☀️\"}, ...]. Usa códigos de 3 letras para los días (LUN, MAR, etc).";
+    // Configuramos el modelo con herramientas de búsqueda para datos reales
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash",
+      tools: [{ googleSearch: {} }] as any
+    });
+
+    const prompt = `Busca el tiempo actual y la previsión para los próximos 5 días en Ayamonte (Huelva, España), coordenadas 37.21, -7.40. 
+    Devuelve estrictamente un JSON array con este formato: 
+    [{"dayName": "HOY", "temp": 18, "condition": "Soleado", "icon": "☀️"}, ...]
+    Asegúrate de que los datos sean reales para hoy y los próximos días de 2026 de fuentes como AEMET.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -36,7 +44,12 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
           ...item,
           temp: typeof item.temp === 'string' ? parseInt(item.temp) : item.temp,
         }));
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: finalData }));
+
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          timestamp: Date.now(),
+          data: finalData
+        }));
+
         return finalData;
       }
     }
@@ -57,7 +70,7 @@ const getFallbackWeather = (): WeatherData[] => {
     forecast.push({
       dayName: i === 0 ? 'HOY' : days[futureDate.getDay()],
       temp: 18 + i,
-      condition: 'Variable',
+      condition: 'Variable (Fallback)',
       icon: i % 2 === 0 ? '☀️' : '⛅'
     });
   }
