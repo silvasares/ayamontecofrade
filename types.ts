@@ -108,6 +108,8 @@ export interface News {
   publishedAt?: string; // Para compatibilidad
   status: 'published' | 'draft' | 'scheduled';
   image: string;
+  link?: string;
+  publish_date?: string;
 }
 
 export interface Alert {

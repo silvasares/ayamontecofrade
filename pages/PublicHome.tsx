@@ -498,7 +498,10 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
                     {formatDate(item.publishedAt)}
                   </span>
                   <h4 className="font-serif font-medium text-gray-900 dark:text-white leading-tight line-clamp-2 text-xs mb-1">{item.title}</h4>
-                  <span className="text-[9px] text-[#4B0082] dark:text-[#D4AF37] font-bold mt-auto">Leer</span>
+                  <div className="flex items-center justify-between mt-auto">
+                    <span className="text-[9px] text-[#4B0082] dark:text-[#D4AF37] font-bold">Leer noticia</span>
+                    {item.link && <ExternalLink size={10} className="text-gray-400" />}
+                  </div>
                 </div>
               </Link>
             ))}
