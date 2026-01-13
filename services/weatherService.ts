@@ -2,8 +2,9 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { WeatherData } from '../types';
 
-const CACHE_KEY = 'ac_weather_cache';
-const CACHE_EXPIRY = 2 * 60 * 60 * 1000;
+// Cambiamos la clave de caché para FORZAR a todos los navegadores a borrar los datos viejos de 700 grados
+const CACHE_KEY = 'ac_weather_cache_v3';
+const CACHE_EXPIRY = 60 * 60 * 1000; // 1 hora
 
 export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
   const cached = localStorage.getItem(CACHE_KEY);
@@ -24,17 +25,12 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
       tools: [{ googleSearch: {} }] as any
     });
 
-    const prompt = `Consulta AEMET para Ayamonte (Huelva) para HOY martes y los próximos 4 días.
+    const prompt = `Consulta AEMET.es para Ayamonte (Huelva) HOY y próximos 4 días.
+    DEVUELVE SÓLO UN JSON ARRAY COMO ESTE:
+    [{"dayName": "HOY", "temp": 14, "condition": "Lluvia", "icon": "🌧️"}, ...]
     
-    Genera un JSON con este formato exacto:
-    [
-      {"dayName": "HOY", "temp": 14, "condition": "Lluvia", "icon": "🌧️"},
-      ...
-    ]
-    REGLAS IMPORTANTES:
-    1. El campo "temp" debe ser SOLO el número de la temperatura máxima prevista en grados Celsius.
-    2. NO concatenes la probabilidad de lluvia con la temperatura. 
-    3. Asegúrate de que los días sean: HOY, MIE, JUE, VIE, SAB.`;
+    REGLA CRÍTICA: La temperatura debe ser SOLO el número de grados Celsius (ejemplo: 14). 
+    JAMÁS pongas la probabilidad de lluvia junto al número. Si el número es mayor de 40, está MAL.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -46,13 +42,23 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
       let data = JSON.parse(jsonMatch[0]);
       if (Array.isArray(data)) {
         const finalData = data.slice(0, 5).map(item => {
-          let t = typeof item.temp === 'string' ? parseInt(item.temp) : item.temp;
+          let t = 15; // Valor por defecto sensato
 
-          // FILTRO DE SEGURIDAD: Si la temperatura es absurda (>50), 
-          // probablemente la IA concatenó datos. Intentamos sacar los últimos dos dígitos.
-          if (t > 50) {
+          // Extraemos el número real por si la IA se equivoca
+          const rawTemp = item.temp.toString();
+          const match = rawTemp.match(/\d+/);
+          if (match) {
+            t = parseInt(match[0]);
+          }
+
+          // Si el número es > 40 (imposible ahora), cogemos solo los dos últimos dígitos
+          // Ejemplo: 715 (70% lluvia, 15 grados) -> se queda con 15
+          if (t > 40) {
             t = parseInt(t.toString().slice(-2));
           }
+
+          // Último filtro de seguridad cofrade
+          if (t < 0 || t > 35) t = 14;
 
           return {
             ...item,
@@ -84,9 +90,9 @@ const getFallbackWeather = (): WeatherData[] => {
     futureDate.setDate(now.getDate() + i);
     forecast.push({
       dayName: i === 0 ? 'HOY' : days[futureDate.getDay()],
-      temp: 14 + i,
-      condition: 'Ajustando...',
-      icon: '🌤️'
+      temp: 14,
+      condition: 'Consultando AEMET...',
+      icon: '🌦️'
     });
   }
   return forecast;
