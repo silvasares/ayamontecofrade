@@ -27,15 +27,23 @@ const SECTION_CARD = "bg-white dark:bg-[#111] p-6 rounded-[32px] border border-g
 const MODAL_OVERLAY = "fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto";
 const MODAL_CONTENT = "bg-white dark:bg-[#0A0A0A] w-full max-w-4xl rounded-[40px] shadow-2xl my-8 border border-white/10 overflow-hidden relative animate-in zoom-in duration-300";
 
-const MIGRATION_SQL = `-- Script de Corrección Definitivo (Versión 3)
+const MIGRATION_SQL = `-- Script de Corrección Definitivo (Versión 4)
+-- Ejecuta esto en el SQL Editor de Supabase si ves errores de "column not found"
 
--- 1. Crear tablas si no existen (Estructura base)
+-- 1. Tabla News
+alter table news add column if not exists publish_date timestamptz default now();
+alter table news add column if not exists link text;
+
+-- 2. Tabla Days
 create table if not exists days (
   id uuid default gen_random_uuid() primary key,
   name text not null,
+  order_index integer default 0,
+  date date,
   created_at timestamptz default now()
 );
 
+-- 3. Tabla Bands
 create table if not exists bands (
   id uuid default gen_random_uuid() primary key,
   name text not null,
@@ -44,30 +52,12 @@ create table if not exists bands (
   created_at timestamptz default now()
 );
 
--- 2. Asegurar columnas faltantes (ALTER TABLE es seguro si ya existen)
-alter table days add column if not exists order_index integer default 0;
-alter table days add column if not exists date date;
-
+-- 4. Tabla Pasos (Asegurar referencias)
 alter table pasos add column if not exists band_id uuid references bands(id);
 alter table pasos add column if not exists floral_arrangement text;
 alter table pasos add column if not exists foundation_year integer;
 
--- 3. Limpieza de políticas antiguas para evitar errores
-drop policy if exists "Public read access bands" on bands;
-drop policy if exists "Admin write access bands" on bands;
-drop policy if exists "Public read access days" on days;
-drop policy if exists "Admin write access days" on days;
-
--- 4. Habilitar RLS y recrear políticas
-alter table bands enable row level security;
-alter table days enable row level security;
-
-create policy "Public read access bands" on bands for select using (true);
-create policy "Admin write access bands" on bands for all using (true);
-create policy "Public read access days" on days for select using (true);
-create policy "Admin write access days" on days for all using (true);
-
--- 5. Recargar caché de esquema
+-- 5. Recargar caché de esquema para que los cambios se apliquen ya
 notify pgrst, 'reload schema';`;
 
 const getErrorMessage = (err: any): string => {
