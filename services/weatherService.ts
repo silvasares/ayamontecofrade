@@ -9,54 +9,49 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
   // Intentar cargar desde caché
   const cached = localStorage.getItem(CACHE_KEY);
   if (cached) {
-    const { timestamp, data } = JSON.parse(cached);
-    if (Date.now() - timestamp < CACHE_EXPIRY) {
-      return data;
+    try {
+      const { timestamp, data } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_EXPIRY) {
+        return data;
+      }
+    } catch (e) {
+      console.error("Cache parse error:", e);
     }
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || "" });
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+  if (!apiKey || apiKey === "undefined") {
+    console.warn("Weather API Key missing, using fallback.");
+    return getFallbackWeather();
+  }
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: "Search for the current weather and 5-day forecast for Ayamonte, Huelva, Spain. Provide the response as a valid JSON array of objects with keys: dayName (string: 'HOY' for the first, then 3-letter Spanish day codes like 'JUE', 'VIE', 'SAB', 'DOM', 'LUN'), temp (number, current or max temperature in Celsius), condition (short string), and icon (single weather emoji). Provide exactly 5 days.",
-      config: {
-        tools: [{ googleSearch: {} }],
-      },
+    const ai = new GoogleGenAI(apiKey);
+    const model = ai.getGenerativeModel({
+      model: "gemini-1.5-flash",
+      generationConfig: { temperature: 0.1 }
     });
 
-    const text = response.text || "";
+    const result = await model.generateContent("Search for the current weather and 5-day forecast for Ayamonte, Huelva, Spain. Provide the response as a valid JSON array of objects with keys: dayName (string: 'HOY' for the first, then 3-letter Spanish day codes like 'JUE', 'VIE', 'SAB', 'DOM', 'LUN'), temp (number, current or max temperature in Celsius), condition (short string), and icon (single weather emoji). Provide exactly 5 days.");
+    const response = await result.response;
+    const text = response.text();
     const jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
 
-    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
-    const sources = groundingChunks
-      .filter(chunk => chunk.web)
-      .map(chunk => ({
-        uri: chunk.web?.uri || "",
-        title: chunk.web?.title || "Fuente de información meteorológica"
-      }))
-      .filter(s => s.uri !== "");
-
     if (jsonMatch) {
-      try {
-        const data = JSON.parse(jsonMatch[0]);
-        if (Array.isArray(data)) {
-          const finalData = data.slice(0, 5).map((item, idx) => ({
-            ...item,
-            sources: idx === 0 ? sources : undefined
-          }));
+      const data = JSON.parse(jsonMatch[0]);
+      if (Array.isArray(data)) {
+        const finalData = data.slice(0, 5).map((item) => ({
+          ...item,
+          temp: typeof item.temp === 'string' ? parseInt(item.temp) : item.temp,
+        }));
 
-          // Guardar en caché
-          localStorage.setItem(CACHE_KEY, JSON.stringify({
-            timestamp: Date.now(),
-            data: finalData
-          }));
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          timestamp: Date.now(),
+          data: finalData
+        }));
 
-          return finalData;
-        }
-      } catch (e) {
-        console.error("Failed to parse weather JSON:", e);
+        return finalData;
       }
     }
 
