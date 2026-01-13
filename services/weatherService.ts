@@ -19,7 +19,7 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
 
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
     const prompt = "Dame el tiempo de Ayamonte, Huelva, para los próximos 5 días en este formato JSON exacto (solo el JSON): [{\"dayName\": \"HOY\", \"temp\": 18, \"condition\": \"Soleado\", \"icon\": \"☀️\"}, ...]. Usa códigos de 3 letras para los días (LUN, MAR, etc).";
 

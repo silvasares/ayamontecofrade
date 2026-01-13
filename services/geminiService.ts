@@ -27,7 +27,7 @@ export const askCofradeAssistant = async (query: string): Promise<AssistantRespo
     }
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       generationConfig: { temperature: 0.7 },
       systemInstruction: "Eres el 'Asistente Cofrade Supremo de Ayamonte'. Tu conocimiento es enciclopédico sobre la Semana Santa de Ayamonte (Huelva). Responde con pasión cofrade, usando términos locales como 'cargadores' y mencionando los barrios (Barrio Alto, Ribera, San Francisco)."
     });
