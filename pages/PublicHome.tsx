@@ -66,7 +66,20 @@ const getDayIndex = (dayName: string): number => {
     [Day.SABADO_PASION]: 6,
     [Day.SABADO_SANTO]: 6
   };
-  return map[dayName] !== undefined ? map[dayName] : -1;
+  return map[dayName] ?? 0;
+};
+
+const getDayCode = (dayName: string): string => {
+  const d = dayName.toLowerCase();
+  if (d.includes('lunes')) return 'LUN';
+  if (d.includes('martes')) return 'MAR';
+  if (d.includes('miercoles') || d.includes('miércoles')) return 'MIÉ';
+  if (d.includes('jueves')) return 'JUE';
+  if (d.includes('viernes')) return 'VIE';
+  if (d.includes('sabado') || d.includes('sábado')) return 'SÁB';
+  if (d.includes('domingo')) return 'DOM';
+  if (d.includes('madruga') || d.includes('madrugá')) return 'VIE';
+  return '';
 };
 
 const isSameDate = (date1: Date, dateStr?: string) => {
@@ -236,19 +249,29 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
         <div className="relative z-10 px-6 pt-16">
 
           {/* MÓDULO 1: TIEMPO (Prioridad Absoluta) */}
-          <div className="w-full overflow-x-auto no-scrollbar pb-6">
-            <div className="flex justify-center gap-3 min-w-max mx-auto">
-              {loadingWeather ? Array(5).fill(0).map((_, i) => (
-                <div key={i} className="bg-white/5 backdrop-blur-sm px-3 py-2 rounded-xl flex flex-col items-center justify-center border border-white/5 min-w-[56px] animate-pulse h-16">
-                  <div className="w-6 h-6 bg-white/10 rounded-full mb-1"></div>
-                </div>
-              )) : forecast.map((day, idx) => (
-                <div key={idx} className={`backdrop-blur-sm px-3 py-2 rounded-xl flex flex-col items-center justify-center border min-w-[60px] transition-all ${idx === 0 ? 'bg-white/10 border-white/20 shadow-sm' : 'bg-transparent border-transparent opacity-70'}`}>
-                  <span className={`text-[9px] uppercase font-bold tracking-wider mb-0.5 ${idx === 0 ? 'text-[#D4AF37]' : 'text-gray-400'}`}>{day.dayName}</span>
-                  <span className="text-lg mb-0.5 drop-shadow-sm leading-none">{day.icon}</span>
-                  <p className="text-[10px] font-medium text-white">{day.temp}°</p>
-                </div>
-              ))}
+          <div className="w-full flex flex-col items-center mb-4">
+            <div className="flex items-center gap-1.5 mb-2 opacity-60">
+              <MapIcon size={10} className="text-[#D4AF37]" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">Ayamonte</span>
+            </div>
+            <div className="w-full overflow-x-auto no-scrollbar pb-2">
+              <div className="flex justify-center gap-3 min-w-max mx-auto">
+                {loadingWeather ? (
+                  Array(5).fill(0).map((_, i) => (
+                    <div key={i} className="bg-white/5 backdrop-blur-sm px-3 py-2 rounded-xl flex flex-col items-center justify-center border border-white/5 min-w-[56px] animate-pulse h-16">
+                      <div className="w-6 h-6 bg-white/10 rounded-full mb-1"></div>
+                    </div>
+                  ))
+                ) : (
+                  forecast.map((day, idx) => (
+                    <div key={idx} className={`backdrop-blur-sm px-3 py-2 rounded-xl flex flex-col items-center justify-center border min-w-[60px] transition-all ${idx === 0 ? 'bg-white/10 border-white/20 shadow-sm' : 'bg-transparent border-transparent opacity-70'}`}>
+                      <span className={`text-[9px] uppercase font-bold tracking-wider mb-0.5 ${idx === 0 ? 'text-[#D4AF37]' : 'text-gray-400'}`}>{day.dayName}</span>
+                      <span className="text-lg mb-0.5 drop-shadow-sm leading-none">{day.icon}</span>
+                      <p className="text-[10px] font-medium text-white">{day.temp}°</p>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
 
@@ -355,10 +378,12 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
 
                       {(() => {
                         const pDay = getPasoDay(nextPaso);
-                        // Simple matching logic for weather
+                        const dayCode = getDayCode(pDay);
+
+                        // Buscar el tiempo para ese día específico
                         const weather = forecast.find(f =>
-                          f.dayName.toLowerCase().includes(pDay.toLowerCase()) ||
-                          pDay.toLowerCase().includes(f.dayName.toLowerCase())
+                          f.dayName.toUpperCase() === dayCode ||
+                          f.dayName.toUpperCase().includes(dayCode)
                         );
 
                         const isRainy = weather && (
@@ -376,10 +401,20 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
                           );
                         }
 
+                        if (weather) {
+                          return (
+                            <div className="flex items-center gap-1.5 bg-green-600/80 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-green-500/50">
+                              <Check size={10} />
+                              <span className="text-[9px] font-bold uppercase tracking-wider">Climatología Favorable</span>
+                            </div>
+                          );
+                        }
+
+                        // Si no hay datos (día lejano), mostrar estado neutro
                         return (
-                          <div className="flex items-center gap-1.5 bg-green-600/80 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-green-500/50">
-                            <Check size={10} />
-                            <span className="text-[9px] font-bold uppercase tracking-wider">Climatología Favorable</span>
+                          <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
+                            <CloudSun size={10} />
+                            <span className="text-[9px] font-bold uppercase tracking-wider">Previsión no disponible</span>
                           </div>
                         );
                       })()}
