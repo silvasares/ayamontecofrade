@@ -1,30 +1,17 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const getApiKey = () => {
-  const keys = [
-    (import.meta as any).env?.VITE_GEMINI_API_KEY,
-    (process.env as any)?.VITE_GEMINI_API_KEY,
-    (process.env as any)?.GEMINI_API_KEY
-  ];
+// Vite solo inyecta variables si se accede literalmente a ellas así:
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
-  for (const key of keys) {
-    if (key && key !== "undefined" && key !== "null" && key.length > 10) {
-      return key;
-    }
-  }
-  return null;
-};
-
-const apiKey = getApiKey();
 let ai: any = null;
 
-if (apiKey) {
+if (apiKey && apiKey !== "undefined") {
   try {
     ai = new GoogleGenAI(apiKey);
+    console.log("Gemini inicializado correctamente");
   } catch (e) {
-    console.error("Critical error initializing GoogleGenAI:", e);
-    ai = null;
+    console.error("Error al instanciar Gemini:", e);
   }
 }
 
@@ -63,19 +50,9 @@ export const askCofradeAssistant = async (query: string): Promise<AssistantRespo
     const response = await result.response;
     const text = response.text();
 
-    // Extraer fuentes si existen (Grounding)
-    const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
-    const sources = (groundingMetadata?.groundingChunks || [])
-      .filter((chunk: any) => chunk.web)
-      .map((chunk: any) => ({
-        uri: chunk.web?.uri || "",
-        title: chunk.web?.title || "Fuente oficial ayamontina"
-      }))
-      .filter((s: any) => s.uri !== "");
-
     return {
       text: text || "Lo siento, no he podido procesar esa información sobre nuestra Semana Mayor.",
-      sources
+      sources: []
     };
   } catch (error) {
     console.error("Gemini API Error:", error);
