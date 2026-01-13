@@ -20,21 +20,31 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
   try {
     const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Configuramos el modelo con herramientas de búsqueda para datos reales
+    // Forzamos el uso de Google Search para consultar AEMET en tiempo real
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       tools: [{ googleSearch: {} }] as any
     });
 
-    const prompt = `Busca el tiempo actual y la previsión para los próximos 5 días en Ayamonte (Huelva, España), coordenadas 37.21, -7.40. 
-    Devuelve estrictamente un JSON array con este formato: 
-    [{"dayName": "HOY", "temp": 18, "condition": "Soleado", "icon": "☀️"}, ...]
-    Asegúrate de que los datos sean reales para hoy y los próximos días de 2026 de fuentes como AEMET.`;
+    const prompt = `Actúa como un experto meteorólogo. Busca en la web oficial de AEMET (aemet.es) la predicción meteorológica para Ayamonte (Huelva) para hoy y los próximos 4 días.
+    Es fundamental que los datos provengan de AEMET.
+    
+    Devuelve estrictamente un JSON array con 5 objetos (hoy + 4 días) con estas claves exactas:
+    [
+      {"dayName": "HOY", "temp": 22, "condition": "Despejado", "icon": "☀️"},
+      {"dayName": "MIE", "temp": 21, "condition": "Nubes altas", "icon": "🌤️"},
+      ...
+    ]
+    
+    Usa códigos de 3 letras en español para los días (LUN, MAR, MIE, JUE, VIE, SAB, DOM). 
+    Si hay probabilidad de lluvia según AEMET, refléjalo en la condición e icono (🌧️).
+    Responde SOLO con el JSON array, sin texto adicional ni bloques de código.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
 
+    // Limpieza de cualquier texto extra que la IA pueda añadir
     const jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
 
     if (jsonMatch) {
@@ -55,7 +65,7 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
     }
     return getFallbackWeather();
   } catch (error) {
-    console.error("Gemini Weather Error:", error);
+    console.error("Gemini Weather Error (AEMET search):", error);
     return getFallbackWeather();
   }
 };
@@ -70,7 +80,7 @@ const getFallbackWeather = (): WeatherData[] => {
     forecast.push({
       dayName: i === 0 ? 'HOY' : days[futureDate.getDay()],
       temp: 18 + i,
-      condition: 'Variable (Fallback)',
+      condition: 'Datos AEMET no disponibles',
       icon: i % 2 === 0 ? '☀️' : '⛅'
     });
   }
