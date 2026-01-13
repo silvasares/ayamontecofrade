@@ -27,8 +27,9 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
   }
 
   try {
-    const ai = new GoogleGenAI(apiKey);
+    const ai = new GoogleGenAI({ apiKey });
     const model = ai.getGenerativeModel({
+
       model: "gemini-1.5-flash",
       generationConfig: { temperature: 0.1 }
     });

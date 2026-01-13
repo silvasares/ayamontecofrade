@@ -7,10 +7,12 @@ const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 let ai: any = null;
 
 if (apiKey && apiKey !== "undefined") {
+  console.log("Detectada API Key (primeros 5 caracteres):", apiKey.substring(0, 5) + "...");
   try {
-    ai = new GoogleGenAI(apiKey);
-    console.log("Gemini inicializado correctamente");
+    ai = new GoogleGenAI({ apiKey });
+    console.log("Gemini inicializado correctamente con formato de objeto");
   } catch (e) {
+
     console.error("Error al instanciar Gemini:", e);
   }
 }
