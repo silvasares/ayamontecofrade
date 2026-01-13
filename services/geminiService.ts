@@ -21,14 +21,14 @@ let ai: any = null;
 
 if (apiKey) {
   try {
-    // La librería espera un objeto o una string según la versión. 
-    // Aseguramos que solo se llame si la clave tiene sentido.
-    ai = new GoogleGenAI(apiKey);
+    // Restauramos el formato de objeto original que requiere tu versión del SDK
+    ai = new GoogleGenAI({ apiKey });
   } catch (e) {
     console.error("Critical error initializing GoogleGenAI:", e);
     ai = null;
   }
 }
+
 
 
 
