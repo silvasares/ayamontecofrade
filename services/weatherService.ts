@@ -1,5 +1,5 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { WeatherData } from '../types';
 
 const CACHE_KEY = 'ac_weather_cache';
@@ -18,14 +18,15 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
   if (!apiKey || apiKey === "undefined") return getFallbackWeather();
 
   try {
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: "gemini-pro",
-      contents: "Dame el tiempo de Ayamonte, Huelva, para los próximos 5 días en este formato JSON exacto (solo el JSON): [{\"dayName\": \"HOY\", \"temp\": 18, \"condition\": \"Soleado\", \"icon\": \"☀️\"}, ...]. Usa códigos de 3 letras para los días (LUN, MAR, etc).",
-      config: { temperature: 0.1 },
-    });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const text = response.text || "";
+    const prompt = "Dame el tiempo de Ayamonte, Huelva, para los próximos 5 días en este formato JSON exacto (solo el JSON): [{\"dayName\": \"HOY\", \"temp\": 18, \"condition\": \"Soleado\", \"icon\": \"☀️\"}, ...]. Usa códigos de 3 letras para los días (LUN, MAR, etc).";
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+
     const jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
 
     if (jsonMatch) {
