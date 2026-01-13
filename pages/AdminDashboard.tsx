@@ -57,7 +57,10 @@ alter table pasos add column if not exists band_id uuid references bands(id);
 alter table pasos add column if not exists floral_arrangement text;
 alter table pasos add column if not exists foundation_year integer;
 
--- 5. Recargar caché de esquema para que los cambios se apliquen ya
+-- 5. Tabla Templos
+alter table temples add column if not exists history text;
+
+-- 6. Recargar caché de esquema para que los cambios se apliquen ya
 notify pgrst, 'reload schema';`;
 
 const getErrorMessage = (err: any): string => {
@@ -703,7 +706,43 @@ const TempleManager = () => {
     <div className="space-y-6">
       <div className={`${SECTION_CARD} flex justify-between items-center`}><div className="flex items-center gap-4"><Church className="text-goldCofrade" /><h3 className="font-cofrade text-2xl">Templos</h3></div><button onClick={() => setEditing({ name: '', address: '' })} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Nuevo</button></div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{data.map(t => (<div key={t.id} className="bg-white dark:bg-[#111] p-5 rounded-3xl border flex justify-between items-center"><div className="min-w-0"><h4 className="font-bold truncate">{t.name}</h4><p className="text-xs text-gray-400 truncate">{t.address}</p></div><div className="flex gap-2"><button onClick={() => setEditing(t)} className="text-gray-400 hover:text-goldCofrade"><Edit size={16} /></button><DeleteButton onDelete={async () => { await supabase.from('temples').delete().eq('id', t.id); fetch(); }} /></div></div>))}</div>
-      {editing && (<div className={MODAL_OVERLAY}><div className={MODAL_CONTENT}><div className="bg-[#300050] p-6 text-white flex justify-between items-center"><div className="flex gap-4 items-center"><Church size={20} /><h3 className="font-cofrade font-bold">Gestionar Templo</h3></div><button onClick={() => setEditing(null)}><X size={24} /></button></div><form onSubmit={save} className="p-8 space-y-4"><ErrorDisplay error={errorInfo} onClear={() => setErrorInfo(null)} /><input required className={INPUT_STYLE} value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} placeholder="Nombre" /><input className={INPUT_STYLE} value={editing.address} onChange={e => setEditing({ ...editing, address: e.target.value })} placeholder="Dirección" /><button type="submit" className="w-full bg-goldCofrade text-white py-4 rounded-2xl font-black uppercase text-xs">Guardar</button></form></div></div>)}
+      {editing && (
+        <div className={MODAL_OVERLAY}>
+          <div className={MODAL_CONTENT}>
+            <div className="bg-[#300050] p-6 text-white flex justify-between items-center">
+              <div className="flex gap-4 items-center">
+                <Church size={20} />
+                <h3 className="font-cofrade font-bold">Gestionar Templo</h3>
+              </div>
+              <button onClick={() => setEditing(null)}><X size={24} /></button>
+            </div>
+            <form onSubmit={save} className="p-8 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <ErrorDisplay error={errorInfo} onClear={() => setErrorInfo(null)} />
+              <div>
+                <label className={LABEL_STYLE}>Nombre del Templo</label>
+                <input required className={INPUT_STYLE} value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} placeholder="Ej. Parroquia de las Angustias" />
+              </div>
+              <div>
+                <label className={LABEL_STYLE}>Dirección</label>
+                <input className={INPUT_STYLE} value={editing.address} onChange={e => setEditing({ ...editing, address: e.target.value })} placeholder="Calle..." />
+              </div>
+              <div>
+                <label className={LABEL_STYLE}>Imagen (URL)</label>
+                <input className={INPUT_STYLE} value={editing.image} onChange={e => setEditing({ ...editing, image: e.target.value })} placeholder="https://..." />
+              </div>
+              <div>
+                <label className={LABEL_STYLE}>Breve Descripción (Resumen)</label>
+                <textarea className={INPUT_STYLE} rows={2} value={editing.description} onChange={e => setEditing({ ...editing, description: e.target.value })} placeholder="Descripción corta para la lista..." />
+              </div>
+              <div>
+                <label className={LABEL_STYLE}>Historia y Detalles (Completo)</label>
+                <textarea className={INPUT_STYLE} rows={5} value={editing.history} onChange={e => setEditing({ ...editing, history: e.target.value })} placeholder="Escribe aquí la historia, curiosidades o detalles del templo..." />
+              </div>
+              <button type="submit" className="w-full bg-goldCofrade text-[#300050] py-4 rounded-2xl font-black uppercase text-xs">Guardar Templo</button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

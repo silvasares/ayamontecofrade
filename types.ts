@@ -84,6 +84,7 @@ export interface Temple {
   address: string;
   description: string;
   image: string;
+  history?: string;
 }
 
 export interface Band {

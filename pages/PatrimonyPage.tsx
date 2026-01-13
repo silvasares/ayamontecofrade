@@ -72,6 +72,12 @@ const PatrimonyPage: React.FC<Props> = ({ temples, posters }) => {
                                         <p className="text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed">{temple.address}</p>
                                     </div>
                                     <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed text-justify px-1">{temple.description}</p>
+                                    {temple.history && (
+                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-top-2">
+                                            <p className="text-[10px] font-black text-goldCofrade uppercase tracking-widest mb-2 px-1">Historia y Detalles</p>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed text-justify px-1 whitespace-pre-line">{temple.history}</p>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
