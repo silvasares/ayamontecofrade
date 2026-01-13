@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <title>Ayamonte Cofrade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        cofrade: ['"Cormorant Garamond"', 'serif'],
+                        serif: ['Lora', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        purpleCofrade: '#4B0082',
+                        deepPurple: '#300050',
+                        goldCofrade: '#D4AF37',
+                        luxuryWhite: '#FFFFFF',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <style>
+        :root {
+            --purple-cofrade: #4B0082;
+            --deep-purple: #300050;
+            --gold-cofrade: #D4AF37;
+            --bg-light: #FFFFFF;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            color: #1A1A1A;
+            overscroll-behavior-y: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .dark body {
+            background-color: #0A0A0A;
+            color: #F3F4F6;
+        }
+        h1, h2, h3, .font-cofrade {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pt-safe { padding-top: env(safe-area-inset-top); }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .luxury-card {
+            background: #FFFFFF;
+            border: 0.5px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 0 10px 30px -5px rgba(75, 0, 130, 0.08);
+            transition: all 0.3s ease;
+        }
+        .dark .luxury-card {
+            background: #141414;
+            border-color: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .gold-gradient {
+            background: linear-gradient(135deg, #D4AF37 0%, #F1D37E 50%, #B8860B 100%);
+        }
+        
+        .animate-in {
+            animation: elegantFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes elegantFade {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .gold-border-bottom {
+            position: relative;
+        }
+        .gold-border-bottom::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 2px;
+            background: var(--gold-cofrade);
+            opacity: 0.6;
+        }
+
+        .dark .leaflet-layer:not(.force-light-map .leaflet-layer),
+        .dark .leaflet-control-zoom-in:not(.force-light-map .leaflet-control-zoom-in),
+        .dark .leaflet-control-zoom-out:not(.force-light-map .leaflet-control-zoom-out),
+        .dark .leaflet-control-attribution:not(.force-light-map .leaflet-control-attribution) {
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+        .dark .leaflet-container {
+            background: #242424;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react-dom": "https://esm.sh/react-dom@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-dom/client": "https://esm.sh/react-dom@^19.2.3/client",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.11.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.474.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

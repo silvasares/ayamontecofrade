@@ -1,0 +1,7 @@
+{
+  "name": "Ayamonte Cofrade",
+  "description": "La guía digital definitiva de la Semana Santa de Ayamonte. Accede a horarios, recorridos, historia, noticias y meteorología en una sola plataforma.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
