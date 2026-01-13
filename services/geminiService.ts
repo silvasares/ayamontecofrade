@@ -1,14 +1,32 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.API_KEY;
+const getApiKey = () => {
+  const keys = [
+    (import.meta as any).env?.VITE_GEMINI_API_KEY,
+    (process.env as any)?.VITE_GEMINI_API_KEY,
+    (process.env as any)?.GEMINI_API_KEY
+  ];
+
+  for (const key of keys) {
+    if (key && key !== "undefined" && key !== "null" && key.length > 10) {
+      return key;
+    }
+  }
+  return null;
+};
+
+const apiKey = getApiKey();
 let ai: any = null;
 
 if (apiKey) {
-  ai = new GoogleGenAI(apiKey);
-} else {
-  console.warn("Gemini API Key missing. AI Assistant will be disabled.");
+  try {
+    ai = new GoogleGenAI(apiKey);
+  } catch (e) {
+    console.error("Error initializing Gemini:", e);
+  }
 }
+
 
 
 export interface AssistantResponse {
