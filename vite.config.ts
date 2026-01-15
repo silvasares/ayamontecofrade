@@ -6,16 +6,22 @@ import legacy from '@vitejs/plugin-legacy';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
+    base: './',
     server: {
       port: 3000,
       host: '0.0.0.0',
     },
     plugins: [
-      react(),
       legacy({
-        targets: ['defaults', 'not IE 11'],
+        targets: ['chrome >= 49', 'android >= 4.4', 'last 2 versions'],
+        additionalLegacyPolyfills: ['regenerator-runtime/runtime']
       }),
+      react(),
     ],
+    build: {
+      target: 'es5',
+      minify: 'terser',
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

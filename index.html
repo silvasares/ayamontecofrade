@@ -13,6 +13,19 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script>
+        window.onerror = function (msg, url, line, col, error) {
+            var errorDiv = document.getElementById('error-display');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.id = 'error-display';
+                errorDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:white;color:red;padding:20px;z-index:99999;font-family:sans-serif;overflow:auto;';
+                document.body.appendChild(errorDiv);
+            }
+            errorDiv.innerHTML = '<h1>Error en la App:</h1><p>' + msg + '</p><p>URL: ' + url + '</p><p>Línea: ' + line + '</p><pre>' + (error ? error.stack : '') + '</pre>';
+            return false;
+        };
+    </script>
+    <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -163,7 +176,7 @@
         </div>
     </noscript>
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="./index.tsx"></script>
 </body>
 
 </html>
