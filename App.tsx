@@ -4,7 +4,7 @@ import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react
 import {
   Calendar, Newspaper, Heart, Settings, Home, Bot, ChevronLeft, Sun, Moon,
   ArrowUp, Bell, X, Volume2, VolumeX, CheckCircle as CheckIcon, AlertTriangle,
-  Shield, Map, LogIn, MapPin, Navigation, Lock, Landmark
+  Shield, Map, LogIn, MapPin, Navigation, Lock, Landmark, Power
 } from 'lucide-react';
 import PublicHome from './pages/PublicHome';
 import CalendarPage from './pages/CalendarPage';
@@ -86,17 +86,30 @@ const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnable
   const isRoot = ['/', '/calendar', '/news', '/favorites', '/patrimony'].includes(location.pathname);
   if (location.pathname.startsWith('/admin')) return null;
 
+  const handleExit = () => {
+    if (window.confirm('¿Deseas cerrar la aplicación?')) {
+      window.close();
+      // Fallback para WebView si el anterior falla
+      window.location.href = "about:blank";
+    }
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-[#300050]/95 backdrop-blur-xl text-white flex items-center px-4 z-[200] border-b border-goldCofrade/20 shadow-lg">
-      <div className="w-10 flex justify-start">
+      <div className="w-12 flex justify-start gap-1">
         {!isRoot ? (
           <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
             <ChevronLeft size={22} className="text-goldCofrade" />
           </button>
         ) : (
-          <button onClick={toggleDarkMode} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            {isDarkMode ? <Sun size={18} className="text-goldCofrade" /> : <Moon size={18} className="text-goldCofrade" />}
-          </button>
+          <>
+            <button onClick={toggleDarkMode} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              {isDarkMode ? <Sun size={18} className="text-goldCofrade" /> : <Moon size={18} className="text-goldCofrade" />}
+            </button>
+            <button onClick={handleExit} className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-10">
+              <Power size={14} className="text-gray-400" />
+            </button>
+          </>
         )}
       </div>
 
