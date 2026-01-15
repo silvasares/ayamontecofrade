@@ -106,8 +106,8 @@ const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnable
             <button onClick={toggleDarkMode} className="p-2 hover:bg-white/10 rounded-full transition-colors">
               {isDarkMode ? <Sun size={18} className="text-goldCofrade" /> : <Moon size={18} className="text-goldCofrade" />}
             </button>
-            <button onClick={handleExit} className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-10">
-              <Power size={14} className="text-gray-400" />
+            <button onClick={handleExit} className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-70 hover:opacity-100" title="Salir de la App">
+              <Power size={18} className="text-red-400" />
             </button>
           </>
         )}
