@@ -2,12 +2,16 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { WeatherData } from '../types';
 
-// Cambiamos la clave de caché para FORZAR a todos los navegadores a borrar los datos viejos de 700 grados
-const CACHE_KEY = 'ac_weather_cache_v3';
-const CACHE_EXPIRY = 60 * 60 * 1000; // 1 hora
+// Cambiamos la clave de caché para FORZAR a todos los navegadores a borrar los datos viejos
+const CACHE_KEY = 'ac_weather_cache_v4_kodular';
+const CACHE_EXPIRY = 30 * 60 * 1000; // Reducimos a 30 min para mayor frescura
 
 export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
-  const cached = localStorage.getItem(CACHE_KEY);
+  let cached = null;
+  try {
+    cached = localStorage.getItem(CACHE_KEY);
+  } catch (e) { }
+
   if (cached) {
     try {
       const { timestamp, data } = JSON.parse(cached);
@@ -66,10 +70,12 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
           };
         });
 
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          timestamp: Date.now(),
-          data: finalData
-        }));
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+            timestamp: Date.now(),
+            data: finalData
+          }));
+        } catch (e) { }
 
         return finalData;
       }
