@@ -6,6 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>Ayamonte Cofrade</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="/icon-512.png">
+    <link rel="apple-touch-icon" href="/icon-512.png">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#4B0082">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -149,6 +155,13 @@
 </head>
 
 <body>
+    <noscript>
+        <div style="padding: 20px; text-align: center; font-family: sans-serif;">
+            <h1>JavaScript Desactivado</h1>
+            <p>Esta aplicación requiere JavaScript para funcionar. Por favor, actívalo en los ajustes de tu navegador o
+                WebView.</p>
+        </div>
+    </noscript>
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
 </body>

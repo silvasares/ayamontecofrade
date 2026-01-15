@@ -21,6 +21,24 @@ import { Paso, News, Alert, Brotherhood, Day, Temple, Band } from './types';
 
 const ALARM_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
+const safeStorage = {
+  getItem: (key: string, defaultValue: string): string => {
+    try {
+      return localStorage.getItem(key) || defaultValue;
+    } catch (e) {
+      console.warn('Storage blocked', e);
+      return defaultValue;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.warn('Storage blocked', e);
+    }
+  }
+};
+
 const getSpainTime = (): Date => {
   const now = new Date();
   const spainTimeStr = now.toLocaleString("sv-SE", { timeZone: "Europe/Madrid" }).replace(' ', 'T');
@@ -31,7 +49,7 @@ const InAppAlertModal = ({ alerts, onRead, soundEnabled }: { alerts: Alert[], on
   const [visibleAlert, setVisibleAlert] = useState<Alert | null>(null);
 
   useEffect(() => {
-    const readIds = JSON.parse(localStorage.getItem('ac_read_alerts') || '[]');
+    const readIds = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]'));
     const unread = alerts.filter(a => !readIds.includes(a.id));
     if (unread.length > 0) {
       setVisibleAlert(unread[0]);
@@ -142,8 +160,8 @@ const AppContent = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('ac_theme') !== 'light');
-  const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('ac_sound') !== 'false');
+  const [isDarkMode, setIsDarkMode] = useState(() => safeStorage.getItem('ac_theme', 'dark') !== 'light');
+  const [soundEnabled, setSoundEnabled] = useState(() => safeStorage.getItem('ac_sound', 'true') !== 'false');
   const [pasos, setPasos] = useState<Paso[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [activeInAppAlerts, setActiveInAppAlerts] = useState<Alert[]>([]);
@@ -166,7 +184,7 @@ const AppContent = () => {
         .order('scheduled_at', { ascending: false });
 
       if (alertItems) {
-        const readIds = JSON.parse(localStorage.getItem('ac_read_alerts') || '[]');
+        const readIds = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]'));
         setActiveInAppAlerts(alertItems.filter(a => !readIds.includes(a.id)));
       }
 
@@ -198,14 +216,14 @@ const AppContent = () => {
     fetchData();
     const interval = setInterval(fetchData, 60000);
     document.documentElement.classList.toggle('dark', isDarkMode);
-    localStorage.setItem('ac_theme', isDarkMode ? 'dark' : 'light');
-    localStorage.setItem('ac_sound', soundEnabled.toString());
+    safeStorage.setItem('ac_theme', isDarkMode ? 'dark' : 'light');
+    safeStorage.setItem('ac_sound', soundEnabled.toString());
     return () => clearInterval(interval);
   }, [isDarkMode, soundEnabled]);
 
   return (
     <div className="min-h-screen bg-luxuryWhite dark:bg-[#0A0A0A] flex flex-col transition-all duration-500">
-      <InAppAlertModal alerts={activeInAppAlerts} onRead={(id) => { const read = JSON.parse(localStorage.getItem('ac_read_alerts') || '[]'); localStorage.setItem('ac_read_alerts', JSON.stringify([...read, id])); setActiveInAppAlerts(prev => prev.filter(a => a.id !== id)); }} soundEnabled={soundEnabled} />
+      <InAppAlertModal alerts={activeInAppAlerts} onRead={(id) => { const read = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]')); safeStorage.setItem('ac_read_alerts', JSON.stringify([...read, id])); setActiveInAppAlerts(prev => prev.filter(a => a.id !== id)); }} soundEnabled={soundEnabled} />
 
       {!isAdmin && <DesktopSidebar />}
       <MobileHeader isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} />
