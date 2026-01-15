@@ -96,7 +96,13 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
   const [loadingWeather, setLoadingWeather] = useState(true);
   const [now, setNow] = useState(getSpainTime());
   const [showCoverModal, setShowCoverModal] = useState(false);
-  const [showNotificationBanner, setShowNotificationBanner] = useState(Notification.permission === 'default');
+  const [showNotificationBanner, setShowNotificationBanner] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && 'Notification' in window && window.Notification.permission === 'default';
+    } catch (e) {
+      return false;
+    }
+  });
   const [aiQuery, setAiQuery] = useState('');
   const navigate = useNavigate();
 
@@ -111,9 +117,17 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
   }, []);
 
   const handleRequestPermission = async () => {
-    const permission = await Notification.requestPermission();
-    if (permission === 'granted') {
-      alert("¡Gracias! Ahora recibirás avisos de última hora en tu móvil.");
+    try {
+      if (typeof window !== 'undefined' && 'Notification' in window) {
+        const permission = await window.Notification.requestPermission();
+        if (permission === 'granted') {
+          alert("¡Gracias! Ahora recibirás avisos de última hora en tu móvil.");
+        }
+      } else {
+        alert("Las notificaciones no están soportadas en este dispositivo.");
+      }
+    } catch (e) {
+      console.error("Error formalizing notification permission", e);
     }
     setShowNotificationBanner(false);
   };

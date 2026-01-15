@@ -11,7 +11,11 @@ const getLocalData = (table: string) => {
 };
 
 const setLocalData = (table: string, data: any[]) => {
-    localStorage.setItem(`ac_mock_${table}`, JSON.stringify(data));
+    try {
+        localStorage.setItem(`ac_mock_${table}`, JSON.stringify(data));
+    } catch (e) {
+        console.warn('Local storage is not available', e);
+    }
 };
 
 class MockQuery {
