@@ -80,51 +80,99 @@ const InAppAlertModal = ({ alerts, onRead, soundEnabled }: { alerts: Alert[], on
   );
 };
 
+const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: { isOpen: boolean, onClose: () => void, onConfirm: () => void, title: string, message: string }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white dark:bg-[#1C1C1E] w-full max-w-xs rounded-2xl shadow-2xl scale-100 overflow-hidden animate-in zoom-in-95 duration-200">
+        <div className="p-6 text-center">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
+          <p className="text-sm text-gray-600 dark:text-gray-300">{message}</p>
+        </div>
+        <div className="flex border-t border-gray-200 dark:border-white/10">
+          <button
+            onClick={onClose}
+            className="flex-1 py-4 text-base font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors active:bg-gray-100 dark:active:bg-white/10"
+          >
+            Cancelar
+          </button>
+          <div className="w-px bg-gray-200 dark:bg-white/10"></div>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-4 text-base font-bold text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors active:bg-red-100 dark:active:bg-red-500/20"
+          >
+            Salir
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnabled }: any) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isRoot = ['/', '/calendar', '/news', '/favorites', '/patrimony'].includes(location.pathname);
   if (location.pathname.startsWith('/admin')) return null;
 
-  const handleExit = () => {
-    if (window.confirm('¿Deseas cerrar la aplicación?')) {
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  const performExit = () => {
+    // Intentos agresivos de cierre para diferentes entornos
+    try {
       window.close();
-      // Fallback para WebView si el anterior falla
-      window.location.href = "about:blank";
+      if (window.top) window.top.close();
+      if ((navigator as any).app && (navigator as any).app.exitApp) {
+        (navigator as any).app.exitApp();
+      }
+    } catch (e) {
+      console.warn("Cierre automático bloqueado por el navegador/OS", e);
     }
+    // NOTA: Eliminamos la redirección a 'about:blank' para no mostrar página blanca si falla
+    setShowExitConfirm(false);
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 bg-[#300050]/95 backdrop-blur-xl text-white flex items-center px-4 z-[200] border-b border-goldCofrade/20 shadow-lg">
-      <div className="w-12 flex justify-start gap-1">
-        {!isRoot ? (
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <ChevronLeft size={22} className="text-goldCofrade" />
+    <>
+      <ConfirmationModal
+        isOpen={showExitConfirm}
+        onClose={() => setShowExitConfirm(false)}
+        onConfirm={performExit}
+        title="¿Salir de la App?"
+        message="¿Estás seguro de que deseas cerrar la aplicación?"
+      />
+      <header className="fixed top-0 left-0 right-0 h-16 bg-[#300050]/95 backdrop-blur-xl text-white flex items-center px-4 z-[200] border-b border-goldCofrade/20 shadow-lg">
+        <div className="w-12 flex justify-start gap-1">
+          {!isRoot ? (
+            <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+              <ChevronLeft size={22} className="text-goldCofrade" />
+            </button>
+          ) : (
+            <>
+              <button onClick={toggleDarkMode} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                {isDarkMode ? <Sun size={18} className="text-goldCofrade" /> : <Moon size={18} className="text-goldCofrade" />}
+              </button>
+              <button onClick={() => setShowExitConfirm(true)} className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-70 hover:opacity-100" title="Salir de la App">
+                <Power size={18} className="text-red-400" />
+              </button>
+            </>
+          )}
+        </div>
+
+        <div className="flex-grow flex items-center justify-center gap-2">
+          <h1 className="font-cofrade text-base font-bold tracking-[0.05em] text-white whitespace-nowrap">
+            AYAMONTE COFRADE <span className="text-goldCofrade ml-1">2026</span>
+          </h1>
+        </div>
+
+        <div className="w-12 flex justify-end">
+          <button onClick={() => setSoundEnabled(!soundEnabled)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+            {soundEnabled ? <Volume2 size={18} className="text-goldCofrade" /> : <VolumeX size={18} className="text-gray-400" />}
           </button>
-        ) : (
-          <>
-            <button onClick={toggleDarkMode} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-              {isDarkMode ? <Sun size={18} className="text-goldCofrade" /> : <Moon size={18} className="text-goldCofrade" />}
-            </button>
-            <button onClick={handleExit} className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-70 hover:opacity-100" title="Salir de la App">
-              <Power size={18} className="text-red-400" />
-            </button>
-          </>
-        )}
-      </div>
-
-      <div className="flex-grow flex items-center justify-center gap-2">
-        <h1 className="font-cofrade text-base font-bold tracking-[0.05em] text-white whitespace-nowrap">
-          AYAMONTE COFRADE <span className="text-goldCofrade ml-1">2026</span>
-        </h1>
-      </div>
-
-      <div className="w-10 flex justify-end">
-        <button onClick={() => setSoundEnabled(!soundEnabled)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-          {soundEnabled ? <Volume2 size={18} className="text-goldCofrade" /> : <VolumeX size={18} className="text-gray-400" />}
-        </button>
-      </div>
-    </header>
+        </div>
+      </header>
+    </>
   );
 };
 
