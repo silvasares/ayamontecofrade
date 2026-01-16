@@ -400,7 +400,8 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
                           f.dayName.toUpperCase().includes(dayCode)
                         );
 
-                        const condition = weather.condition.toLowerCase();
+                        const condition = weather?.condition?.toLowerCase() || '';
+
                         const isRainy = weather && (
                           condition.includes('lluvi') ||
                           condition.includes('tormenta') ||
