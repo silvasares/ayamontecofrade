@@ -77,6 +77,18 @@ const NewsPage: React.FC<Props> = ({ news }) => {
       const pDate = new Date(item.publish_date);
       if (pDate > now) return false;
     }
+
+    // Filtrar noticias cuya fecha de actividad ya pasó
+    if (item.publishedAt) {
+      const eventDate = new Date(item.publishedAt);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      eventDate.setHours(0, 0, 0, 0); // Comparar solo fechas
+
+      // Si la fecha del evento es anterior a hoy, eliminar
+      if (eventDate < today) return false;
+    }
+
     return true;
   });
 

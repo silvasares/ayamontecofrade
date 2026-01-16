@@ -158,6 +158,16 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
           const pDate = new Date(item.publish_date);
           if (pDate.getTime() > nowTime) return false;
         }
+
+        // Filtrar noticias pasadas (Fecha de actividad < Hoy)
+        if (item.publishedAt) {
+          const eventDate = new Date(item.publishedAt);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          eventDate.setHours(0, 0, 0, 0); // Comparar solo fechas
+          if (eventDate < today) return false;
+        }
+
         return true;
       })
       .slice(0, 3);
