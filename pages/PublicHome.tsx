@@ -420,11 +420,11 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
                         }
 
                         if (weather) {
-                          if (condition.includes('consultando')) {
+                          if (condition.includes('consultando') || condition.length < 3) {
                             return (
                               <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
                                 <CloudSun size={10} />
-                                <span className="text-[9px] font-bold uppercase tracking-wider">Previsión no disponible</span>
+                                <span className="text-[9px] font-bold uppercase tracking-wider">Sin datos oficiales</span>
                               </div>
                             );
                           }

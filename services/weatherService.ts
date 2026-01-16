@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { WeatherData } from '../types';
 
 // Cambiamos la clave de caché para FORZAR a todos los navegadores a borrar los datos viejos
-const CACHE_KEY = 'ac_weather_cache_v4_kodular';
+const CACHE_KEY = 'ac_weather_cache_v5_final';
 const CACHE_EXPIRY = 30 * 60 * 1000; // Reducimos a 30 min para mayor frescura
 
 export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
