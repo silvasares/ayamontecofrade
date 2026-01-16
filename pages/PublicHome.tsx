@@ -400,10 +400,13 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
                           f.dayName.toUpperCase().includes(dayCode)
                         );
 
+                        const condition = weather.condition.toLowerCase();
                         const isRainy = weather && (
-                          weather.condition.toLowerCase().includes('lluvi') ||
-                          weather.condition.toLowerCase().includes('tormenta') ||
-                          weather.condition.toLowerCase().includes('chubasco')
+                          condition.includes('lluvi') ||
+                          condition.includes('tormenta') ||
+                          condition.includes('chubasco') ||
+                          condition.includes('inest') ||
+                          condition.includes('riesgo')
                         );
 
                         if (isRainy) {
@@ -416,6 +419,15 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
                         }
 
                         if (weather) {
+                          if (condition.includes('consultando')) {
+                            return (
+                              <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
+                                <CloudSun size={10} />
+                                <span className="text-[9px] font-bold uppercase tracking-wider">Previsión no disponible</span>
+                              </div>
+                            );
+                          }
+
                           return (
                             <div className="flex items-center gap-1.5 bg-green-600/80 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-green-500/50">
                               <Check size={10} />
