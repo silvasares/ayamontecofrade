@@ -60,12 +60,16 @@ alter table pasos add column if not exists foundation_year integer;
 -- 5. Tabla Templos
 alter table temples add column if not exists history text;
 
--- 6. Configuración General (Nuevo)
+-- 6. Configuración General (Nuevo - Corregido)
 create table if not exists app_settings (
   key text primary key,
   value text
 );
 insert into app_settings (key, value) values ('header_title', 'AYAMONTE COFRADE 2026') on conflict do nothing;
+alter publication supabase_realtime add table app_settings;
+grant select on app_settings to anon, authenticated;
+grant all on app_settings to service_role;
+grant all on app_settings to authenticated;
 
 -- 7. Recargar caché de esquema para que los cambios se apliquen ya
 notify pgrst, 'reload schema';`;
