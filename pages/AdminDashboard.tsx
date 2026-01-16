@@ -125,14 +125,30 @@ const ErrorDisplay = ({ error, onClear }: { error: string | null, onClear: () =>
 
           {showSql && (
             <div className="mt-2 bg-[#1a1a1a] rounded-xl p-4 border border-white/10 relative group">
-              <button
-                onClick={handleCopy}
-                className="absolute top-2 right-2 p-2 bg-white/10 rounded-lg text-white hover:bg-white/20 transition-colors"
-                title="Copiar SQL"
-              >
-                {copied ? <CheckIcon size={14} className="text-green-400" /> : <Copy size={14} />}
-              </button>
-              <pre className="text-[9px] text-green-400 font-mono overflow-x-auto p-2 custom-scrollbar select-all">
+              <div className="flex justify-end gap-2 mb-2 absolute top-2 right-2 z-10">
+                <button
+                  onClick={async () => {
+                    try {
+                      const { error } = await supabase.rpc('exec_sql', { sql: MIGRATION_SQL });
+                      // FALLBACK: Si RPC falla (lo normal si no está creada la función), intentamos alertar
+                      if (error) alert("Copia el SQL y ejecútalo en el SQL Editor de Supabase (este botón requiere una función RPC especial).");
+                      else alert("Migración ejecutada.");
+                    } catch (e) { alert("Copia el SQL y ejecútalo manualmente en Supabase."); }
+                  }}
+                  className="p-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-colors text-[9px] font-bold uppercase tracking-wider"
+                >
+                  Intentar Auto-Run
+                </button>
+                <button
+                  onClick={handleCopy}
+                  className="p-2 bg-white/10 rounded-lg text-white hover:bg-white/20 transition-colors"
+                  title="Copiar SQL"
+                >
+                  {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                </button>
+              </div>
+
+              <pre className="text-[9px] text-green-400 font-mono overflow-x-auto p-2 pt-10 custom-scrollbar select-all">
                 {MIGRATION_SQL}
               </pre>
             </div>
