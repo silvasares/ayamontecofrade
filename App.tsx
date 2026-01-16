@@ -110,7 +110,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: { isO
   );
 };
 
-const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnabled }: any) => {
+const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnabled, headerTitle }: any) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isRoot = ['/', '/calendar', '/news', '/favorites', '/patrimony'].includes(location.pathname);
@@ -161,8 +161,8 @@ const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnable
         </div>
 
         <div className="flex-grow flex items-center justify-center gap-2">
-          <h1 className="font-cofrade text-base font-bold tracking-[0.05em] text-white whitespace-nowrap">
-            AYAMONTE COFRADE <span className="text-goldCofrade ml-1">2026</span>
+          <h1 className="font-cofrade text-base font-bold tracking-[0.05em] text-white whitespace-nowrap uppercase">
+            {headerTitle}
           </h1>
         </div>
 
@@ -231,6 +231,7 @@ const AppContent = () => {
   const [brotherhoods, setBrotherhoods] = useState<Brotherhood[]>([]);
   const [days, setDays] = useState<any[]>([]);
   const [posters, setPosters] = useState<any[]>([]);
+  const [headerTitle, setHeaderTitle] = useState("AYAMONTE COFRADE 2026");
 
   const fetchData = async () => {
     try {
@@ -270,6 +271,9 @@ const AppContent = () => {
       const { data: posterItems } = await supabase.from('posters').select('*').order('year', { ascending: false });
       if (posterItems) setPosters(posterItems);
 
+      const { data: settingsData } = await supabase.from('app_settings').select('value').eq('key', 'header_title').single();
+      if (settingsData) setHeaderTitle(settingsData.value);
+
     } catch (err) { console.error(err); }
   };
 
@@ -287,7 +291,7 @@ const AppContent = () => {
       <InAppAlertModal alerts={activeInAppAlerts} onRead={(id) => { const read = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]')); safeStorage.setItem('ac_read_alerts', JSON.stringify([...read, id])); setActiveInAppAlerts(prev => prev.filter(a => a.id !== id)); }} soundEnabled={soundEnabled} />
 
       {!isAdmin && <DesktopSidebar />}
-      <MobileHeader isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} />
+      <MobileHeader isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} headerTitle={headerTitle} />
 
       <main className={`flex-grow ${isAdmin ? '' : 'md:ml-72 pb-32 pt-0 md:pt-0'}`}>
         <Routes>

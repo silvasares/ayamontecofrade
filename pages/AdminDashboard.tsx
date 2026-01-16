@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Trash2, Edit, LogOut, Church, Music, Loader2, ShieldCheck, Image,
-  X, Save, AlertCircle, Layers, Newspaper, Shirt, Sparkles, Map as MapIcon, Info, Users, Flower, Database, Copy, Palette, Calendar, Mail
+  X, Save, AlertCircle, Layers, Newspaper, Shirt, Sparkles, Map as MapIcon, Info, Users, Flower, Database, Copy, Palette, Calendar, Mail, Settings, Type, Check
 } from 'lucide-react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
@@ -60,7 +60,14 @@ alter table pasos add column if not exists foundation_year integer;
 -- 5. Tabla Templos
 alter table temples add column if not exists history text;
 
--- 6. Recargar caché de esquema para que los cambios se apliquen ya
+-- 6. Configuración General (Nuevo)
+create table if not exists app_settings (
+  key text primary key,
+  value text
+);
+insert into app_settings (key, value) values ('header_title', 'AYAMONTE COFRADE 2026') on conflict do nothing;
+
+-- 7. Recargar caché de esquema para que los cambios se apliquen ya
 notify pgrst, 'reload schema';`;
 
 const getErrorMessage = (err: any): string => {
@@ -881,6 +888,74 @@ const MessageManager = () => {
   );
 };
 
+// --- CONFIGURACIÓN GENERAL ---
+const SettingsManager = () => {
+  const [title, setTitle] = useState("AYAMONTE COFRADE 2026");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const fetchSettings = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('app_settings').select('value').eq('key', 'header_title').single();
+    if (data) setTitle(data.value);
+    setLoading(false);
+  };
+
+  const saveSettings = async () => {
+    setSaving(true);
+    const { error } = await supabase.from('app_settings').upsert({ key: 'header_title', value: title });
+    if (error) {
+      alert("Error al guardar: " + error.message);
+    } else {
+      alert("Título actualizado correctamente");
+    }
+    setSaving(false);
+  };
+
+  useEffect(() => { fetchSettings(); }, []);
+
+  if (loading) return <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-purpleCofrade" size={40} /></div>;
+
+  return (
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+      <header className="flex justify-between items-center bg-white dark:bg-[#111] p-6 rounded-[32px] shadow-sm border border-gray-100 dark:border-gray-800">
+        <div>
+          <h2 className="text-3xl font-cofrade text-purpleCofrade dark:text-goldCofrade">Configuración General</h2>
+          <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Personalización de la App</p>
+        </div>
+      </header>
+
+      <div className="bg-white dark:bg-[#111] p-8 rounded-[32px] shadow-sm border border-gray-100 dark:border-gray-800 max-w-2xl">
+        <div className="space-y-4">
+          <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Título de la Cabecera (Año)</label>
+          <div className="relative">
+            <Type className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 p-4 pl-12 rounded-2xl font-bold text-lg outline-none focus:ring-2 focus:ring-purpleCofrade"
+              placeholder="Ej: AYAMONTE COFRADE 2026"
+            />
+          </div>
+        </div>
+
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={saveSettings}
+            disabled={saving}
+            className="bg-purpleCofrade text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-xl flex items-center gap-2 hover:scale-105 transition-transform disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
+            Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- COMPONENTE DE NAVEGACIÓN REUTILIZABLE ---
 const NavItem = ({ to, icon, label, currentPath }: any) => {
   const active = currentPath === to || currentPath === (to + '/') || (to === '/admin' && (currentPath === '/admin' || currentPath === '/admin/'));
   return (
@@ -931,6 +1006,8 @@ const AdminDashboard: React.FC<AdminProps> = (props) => {
           <NavItem to="/admin/temples" icon={<Church size={18} />} label="Templos" currentPath={location.pathname} />
           <NavItem to="/admin/bands" icon={<Music size={18} />} label="Bandas" currentPath={location.pathname} />
           <NavItem to="/admin/posters" icon={<Image size={18} />} label="Cartelería" currentPath={location.pathname} />
+          <div className="h-px bg-gray-100 dark:bg-gray-800 my-4 mx-2"></div>
+          <NavItem to="/admin/settings" icon={<Settings size={18} />} label="Configuración" currentPath={location.pathname} />
         </nav>
         <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-colors"><LogOut size={16} /> Cerrar Sesión</button>
       </aside>
@@ -946,6 +1023,7 @@ const AdminDashboard: React.FC<AdminProps> = (props) => {
           <Route path="/temples" element={<TempleManager />} />
           <Route path="/bands" element={<BandManager />} />
           <Route path="/posters" element={<PosterManager />} />
+          <Route path="/settings" element={<SettingsManager />} />
         </Routes>
       </main>
 
