@@ -90,6 +90,9 @@ const ErrorDisplay = ({ error, onClear }: { error: string | null, onClear: () =>
   const isCacheError = error.toLowerCase().includes('column') ||
     error.toLowerCase().includes('relation') ||
     error.toLowerCase().includes('policy') ||
+    error.toLowerCase().includes('table') ||
+    error.toLowerCase().includes('schema') ||
+    error.toLowerCase().includes('not find') ||
     error.includes('42710');
 
   const handleCopy = () => {
