@@ -392,6 +392,32 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
 
                       {(() => {
                         const pDay = getPasoDay(nextPaso);
+                        // 1. Verificar si la fecha es lejana (más de 4 días) para no inventar datos
+                        // Intentamos buscar la fecha exacta en la configuración de días
+                        let isFar = false;
+                        if (days && days.length > 0) {
+                          const scheduleDay = days.find(d => d.name === pDay);
+                          if (scheduleDay && scheduleDay.date) {
+                            const eventDate = new Date(scheduleDay.date);
+                            const now = new Date();
+                            // Calculamos diferencia en días
+                            const diffTime = eventDate.getTime() - now.getTime();
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                            // Si faltan más de 5 días (margen seguro de predicción), no mostrar predicción
+                            if (diffDays > 5) isFar = true;
+                          }
+                        }
+
+                        if (isFar) {
+                          return (
+                            <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
+                              <Calendar size={10} />
+                              <span className="text-[9px] font-bold uppercase tracking-wider">Aún quedan días</span>
+                            </div>
+                          );
+                        }
+
                         const dayCode = getDayCode(pDay);
 
                         // Buscar el tiempo para ese día específico
