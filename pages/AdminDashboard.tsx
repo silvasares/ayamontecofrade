@@ -913,19 +913,21 @@ const SettingsManager = () => {
   const [title, setTitle] = useState("AYAMONTE COFRADE 2026");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchSettings = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('app_settings').select('value').eq('key', 'header_title').single();
+    const { data } = await supabase.from('app_settings').select('value').eq('key', 'header_title').single();
     if (data) setTitle(data.value);
     setLoading(false);
   };
 
   const saveSettings = async () => {
     setSaving(true);
+    setError(null);
     const { error } = await supabase.from('app_settings').upsert({ key: 'header_title', value: title });
     if (error) {
-      alert("Error al guardar: " + error.message);
+      setError(error.message);
     } else {
       alert("Título actualizado correctamente");
     }
@@ -944,6 +946,8 @@ const SettingsManager = () => {
           <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-1">Personalización de la App</p>
         </div>
       </header>
+
+      <ErrorDisplay error={error} onClear={() => setError(null)} />
 
       <div className="bg-white dark:bg-[#111] p-8 rounded-[32px] shadow-sm border border-gray-100 dark:border-gray-800 max-w-2xl">
         <div className="space-y-4">
