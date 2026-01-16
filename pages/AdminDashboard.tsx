@@ -881,6 +881,15 @@ const MessageManager = () => {
   );
 };
 
+const NavItem = ({ to, icon, label, currentPath }: any) => {
+  const active = currentPath === to || currentPath === (to + '/') || (to === '/admin' && (currentPath === '/admin' || currentPath === '/admin/'));
+  return (
+    <Link to={to} className={`flex items-center gap-4 p-4 rounded-2xl text-sm font-bold transition-all ${active ? 'bg-purpleCofrade text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5'}`}>
+      {icon} {label}
+    </Link>
+  );
+};
+
 const AdminDashboard: React.FC<AdminProps> = (props) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState("");
@@ -906,29 +915,22 @@ const AdminDashboard: React.FC<AdminProps> = (props) => {
     );
   }
 
-  const NavItem = ({ to, icon, label }: any) => {
-    const active = location.pathname === to || location.pathname === (to + '/') || (to === '/admin' && (location.pathname === '/admin' || location.pathname === '/admin/'));
-    return (
-      <Link to={to} className={`flex items-center gap-4 p-4 rounded-2xl text-sm font-bold transition-all ${active ? 'bg-purpleCofrade text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5'}`}>
-        {icon} {label}
-      </Link>
-    );
-  };
+
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] dark:bg-[#050505] flex flex-col md:flex-row">
       <aside className="w-full md:w-72 bg-white dark:bg-[#111] border-r dark:border-gray-800 flex flex-col p-6 space-y-6 shrink-0">
         <h1 className="font-cofrade text-2xl text-purpleCofrade dark:text-goldCofrade text-center md:text-left">Panel Admin</h1>
         <nav className="flex-grow space-y-2">
-          <NavItem to="/admin/hermandades" icon={<ShieldCheck size={18} />} label="Hermandades" />
-          <NavItem to="/admin/pasos" icon={<Layers size={18} />} label="Titulares / Pasos" />
-          <NavItem to="/admin/news" icon={<Newspaper size={18} />} label="Noticias / Alertas" />
-          <NavItem to="/admin/messages" icon={<Mail size={18} />} label="Buzón Ciudadano" />
-          <NavItem to="/admin/days" icon={<Calendar size={18} />} label="Días / Jornadas" />
+          <NavItem to="/admin/hermandades" icon={<ShieldCheck size={18} />} label="Hermandades" currentPath={location.pathname} />
+          <NavItem to="/admin/pasos" icon={<Layers size={18} />} label="Titulares / Pasos" currentPath={location.pathname} />
+          <NavItem to="/admin/news" icon={<Newspaper size={18} />} label="Noticias / Alertas" currentPath={location.pathname} />
+          <NavItem to="/admin/messages" icon={<Mail size={18} />} label="Buzón Ciudadano" currentPath={location.pathname} />
+          <NavItem to="/admin/days" icon={<Calendar size={18} />} label="Días / Jornadas" currentPath={location.pathname} />
           <div className="h-px bg-gray-100 dark:bg-gray-800 my-4 mx-2"></div>
-          <NavItem to="/admin/temples" icon={<Church size={18} />} label="Templos" />
-          <NavItem to="/admin/bands" icon={<Music size={18} />} label="Bandas" />
-          <NavItem to="/admin/posters" icon={<Image size={18} />} label="Cartelería" />
+          <NavItem to="/admin/temples" icon={<Church size={18} />} label="Templos" currentPath={location.pathname} />
+          <NavItem to="/admin/bands" icon={<Music size={18} />} label="Bandas" currentPath={location.pathname} />
+          <NavItem to="/admin/posters" icon={<Image size={18} />} label="Cartelería" currentPath={location.pathname} />
         </nav>
         <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 text-red-500 bg-red-50 dark:bg-red-900/10 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-colors"><LogOut size={16} /> Cerrar Sesión</button>
       </aside>

@@ -114,9 +114,9 @@ const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnable
   const location = useLocation();
   const navigate = useNavigate();
   const isRoot = ['/', '/calendar', '/news', '/favorites', '/patrimony'].includes(location.pathname);
-  if (location.pathname.startsWith('/admin')) return null;
-
   const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  if (location.pathname.startsWith('/admin')) return null;
 
   const performExit = () => {
     // Intentos agresivos de cierre para diferentes entornos
