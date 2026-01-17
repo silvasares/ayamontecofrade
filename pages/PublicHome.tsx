@@ -569,16 +569,22 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
             </Link>
 
             <div
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: 'Ayamonte Cofrade',
-                    text: '¡Descubre la Semana Santa de Ayamonte con esta App!',
-                    url: window.location.origin
-                  }).catch(console.error);
-                } else {
-                  navigator.clipboard.writeText(window.location.origin);
-                  alert('Enlace copiado al portapapeles');
+              onClick={async () => {
+                const shareData = {
+                  title: 'Ayamonte Cofrade',
+                  text: '¡Descubre la Semana Santa de Ayamonte con esta App! 🕯️💜',
+                  url: window.location.origin
+                };
+
+                try {
+                  if (navigator.share && navigator.canShare(shareData)) {
+                    await navigator.share(shareData);
+                  } else {
+                    throw new Error("Share not supported");
+                  }
+                } catch (e) {
+                  // Fallback: Usar redirección directa para evitar bloqueos de popups en WebViews
+                  window.location.href = `https://wa.me/?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`;
                 }
               }}
               className="bg-[#4B0082] p-4 rounded-2xl shadow-md flex flex-col justify-between h-28 relative overflow-hidden text-white group cursor-pointer hover:scale-[1.02] transition-transform active:scale-95"
