@@ -110,7 +110,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: { isO
   );
 };
 
-const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnabled, headerTitle }: any) => {
+const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
   const location = useLocation();
   const navigate = useNavigate();
   const isRoot = ['/', '/calendar', '/news', '/favorites', '/patrimony'].includes(location.pathname);
@@ -150,9 +150,6 @@ const MobileHeader = ({ isDarkMode, toggleDarkMode, soundEnabled, setSoundEnable
             </button>
           ) : (
             <>
-              <button onClick={toggleDarkMode} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                {isDarkMode ? <Sun size={18} className="text-goldCofrade" /> : <Moon size={18} className="text-goldCofrade" />}
-              </button>
               <button onClick={() => setShowExitConfirm(true)} className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-70 hover:opacity-100" title="Salir de la App">
                 <Power size={18} className="text-red-400" />
               </button>
@@ -221,7 +218,7 @@ const AppContent = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
   const [favorites, setFavorites] = useState<string[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState(() => safeStorage.getItem('ac_theme', 'dark') !== 'light');
+
   const [soundEnabled, setSoundEnabled] = useState(() => safeStorage.getItem('ac_sound', 'true') !== 'false');
   const [pasos, setPasos] = useState<Paso[]>([]);
   const [news, setNews] = useState<News[]>([]);
@@ -280,18 +277,20 @@ const AppContent = () => {
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 60000);
-    document.documentElement.classList.toggle('dark', isDarkMode);
-    safeStorage.setItem('ac_theme', isDarkMode ? 'dark' : 'light');
+
+    // Forzar modo oscuro siempre
+    document.documentElement.classList.add('dark');
+
     safeStorage.setItem('ac_sound', soundEnabled.toString());
     return () => clearInterval(interval);
-  }, [isDarkMode, soundEnabled]);
+  }, [soundEnabled]);
 
   return (
     <div className="min-h-screen bg-luxuryWhite dark:bg-[#0A0A0A] flex flex-col transition-all duration-500">
       <InAppAlertModal alerts={activeInAppAlerts} onRead={(id) => { const read = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]')); safeStorage.setItem('ac_read_alerts', JSON.stringify([...read, id])); setActiveInAppAlerts(prev => prev.filter(a => a.id !== id)); }} soundEnabled={soundEnabled} />
 
       {!isAdmin && <DesktopSidebar />}
-      <MobileHeader isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} headerTitle={headerTitle} />
+      <MobileHeader soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} headerTitle={headerTitle} />
 
       <main className={`flex-grow ${isAdmin ? '' : 'lg:ml-72 pb-32 pt-0 lg:pt-0'}`}>
         <Routes>

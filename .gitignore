@@ -14,8 +14,27 @@ dist-ssr
 
 # Editor directories and files
 .vscode/*
-!.vscode/extensions.json
+!.vscode/extVM6:63 cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation
+console.<computed> @ VM6:63
+(anonymous) @ (index):64
+(anonymous) @ (index):64
+VM6:63 Error al instanciar Gemini: Error: An API Key must be set when running in a browser
+    at new Rx (index-DS3XRC3x.js:578:742)
+    at index-DS3XRC3x.js:718:181
+console.<computed> @ VM6:63
+(anonymous) @ index-DS3XRC3x.js:718
+VM6:63 Gemini Weather Error: Error: API key is missing. Please provide a valid API key.
+    at N2.addAuthHeaders (index-DS3XRC3x.js:574:251)
+    at SR.getHeadersInternal (index-DS3XRC3x.js:410:1376)
+    at SR.includeExtraHttpOptionsToRequestInit (index-DS3XRC3x.js:406:4825)
+    at SR.request (index-DS3XRC3x.js:406:3692)
+    at HR.generateContentInternal (index-DS3XRC3x.js:430:8007)
+    at HR.generateContent (index-DS3XRC3x.js:430:240)
+    at async M2 (index-DS3XRC3x.js:578:2060)
+console.<computed> @ VM6:63
+M2 @ index-DS3XRC3x.js:578
 .idea
+bº.idea
 .DS_Store
 *.suo
 *.ntvs*
