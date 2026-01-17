@@ -188,7 +188,7 @@ const DesktopSidebar = () => {
   `;
 
   return (
-    <aside className="hidden md:flex fixed inset-y-0 left-0 z-50 w-72 bg-[#300050] flex-col shadow-[10px_0_40px_rgba(0,0,0,0.3)] border-r border-[#D4AF37]/20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
+    <aside className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-72 bg-[#300050] flex-col shadow-[10px_0_40px_rgba(0,0,0,0.3)] border-r border-[#D4AF37]/20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
       <div className="absolute inset-0 bg-gradient-to-b from-[#4B0082]/80 to-[#300050] pointer-events-none"></div>
 
       <div className="relative z-10 p-10 pb-12">
@@ -293,7 +293,7 @@ const AppContent = () => {
       {!isAdmin && <DesktopSidebar />}
       <MobileHeader isDarkMode={isDarkMode} toggleDarkMode={() => setIsDarkMode(!isDarkMode)} soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} headerTitle={headerTitle} />
 
-      <main className={`flex-grow ${isAdmin ? '' : 'md:ml-72 pb-32 pt-0 md:pt-0'}`}>
+      <main className={`flex-grow ${isAdmin ? '' : 'lg:ml-72 pb-32 pt-0 lg:pt-0'}`}>
         <Routes>
           <Route path="/" element={<PublicHome pasos={pasos} news={news} favorites={favorites} toggleFavorite={(id) => setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id])} defaultCover="" departureStatus="" brotherhoods={brotherhoods} days={days} />} />
           <Route path="/calendar" element={<CalendarPage pasos={pasos} days={days} favorites={favorites} toggleFavorite={(id) => setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id])} brotherhoods={brotherhoods} />} />
