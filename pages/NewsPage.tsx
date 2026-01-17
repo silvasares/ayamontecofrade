@@ -92,11 +92,11 @@ const NewsPage: React.FC<Props> = ({ news }) => {
     return true;
   });
 
-  // Ordenar por fecha del evento/noticia (más reciente primero)
+  // Ordenar por proximidad (la más cercana a hoy primero)
   const sortedNews = [...visibleNews].sort((a, b) => {
     const dateA = parseDate(a.publishedAt).getTime();
     const dateB = parseDate(b.publishedAt).getTime();
-    return dateB - dateA; // Descendente: Lo más nuevo arriba
+    return dateA - dateB; // Ascendente: Lo más próximo arriba
   });
 
   // Paginación: 9 noticias por página (1 destacada + 8 en grid)

@@ -253,7 +253,7 @@ const AppContent = () => {
       const { data: steps } = await supabase.from('pasos').select('*');
       if (steps) setPasos(steps.map(s => ({ ...s, mainImage: s.main_image, startTime: s.start_time?.substring(0, 5), arrivalTime: s.arrival_time?.substring(0, 5) })));
 
-      const { data: newsItems } = await supabase.from('news').select('*').order('published_at', { ascending: false });
+      const { data: newsItems } = await supabase.from('news').select('*').order('published_at', { ascending: true });
       if (newsItems) setNews(newsItems.map(n => ({ ...n, publishedAt: n.published_at })));
 
       const { data: templeItems } = await supabase.from('temples').select('*');
