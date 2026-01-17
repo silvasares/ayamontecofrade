@@ -583,20 +583,10 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
                     throw new Error("Share not supported");
                   }
                 } catch (e) {
-                  // Fallback robusto para WebViews (Kodular/Android)
-                  // 1. Copiamos al portapapeles por seguridad
-                  navigator.clipboard.writeText(shareData.url);
-
-                  // 2. Intentamos abrir WhatsApp en navegador externo/app usando un link simulado
-                  // Esto evita el error ERR_UNKNOWN_URL_SCHEME que ocurre con window.location
-                  const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareData.text + ' ' + shareData.url)}`;
-                  const link = document.createElement('a');
-                  link.href = waUrl;
-                  link.target = '_blank';
-                  link.rel = 'noopener noreferrer';
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
+                  // Fallback: En WebViews muy restrictivas, lo mejor es copiar y avisar.
+                  // Evitamos abrir URLs externas que pueden causar cierres inesperados.
+                  navigator.clipboard.writeText(shareData.text + ' ' + shareData.url);
+                  alert("Enlace copiado al portapapeles. Pégalo en WhatsApp.");
                 }
               }}
               className="bg-[#4B0082] p-4 rounded-2xl shadow-md flex flex-col justify-between h-28 relative overflow-hidden text-white group cursor-pointer hover:scale-[1.02] transition-transform active:scale-95"
