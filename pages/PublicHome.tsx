@@ -380,7 +380,7 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
         ) : (
           <section className="animate-in fade-in">
 
-            <div className="relative w-full aspect-[3/4] md:aspect-video rounded-[28px] overflow-hidden shadow-xl group cursor-pointer border border-white/60 dark:border-white/5" onClick={() => setShowCoverModal(true)}>
+            <div className="relative w-full aspect-[3/4] md:aspect-video rounded-[28px] overflow-hidden shadow-xl group border border-white/60 dark:border-white/5">
               <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-lg flex items-center gap-2 border border-white/10 z-20">
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-gray-400"></span>
                 Ninguna procesión en la calle
