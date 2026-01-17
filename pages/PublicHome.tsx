@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Clock, ChevronRight, Bot, X, ExternalLink, Calendar, Newspaper, Heart, Map as MapIcon, Sparkles, AlertCircle, Bell, ShieldCheck, Lock, Navigation, CloudSun, Search, CloudRain, Check } from 'lucide-react';
+import { Clock, ChevronRight, Bot, X, ExternalLink, Calendar, Newspaper, Heart, Map as MapIcon, Sparkles, AlertCircle, Bell, ShieldCheck, Lock, Navigation, CloudSun, Search, CloudRain, Check, Share2 } from 'lucide-react';
 import { getAyamonteWeather } from '../services/weatherService';
 import { WeatherData, Paso, Day, Brotherhood, DaySchedule } from '../types';
 
@@ -568,14 +568,28 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
               </div>
             </Link>
 
-            <div className="bg-[#4B0082] p-4 rounded-2xl shadow-md flex flex-col justify-between h-28 relative overflow-hidden text-white group cursor-default">
+            <div
+              onClick={() => {
+                if (navigator.share) {
+                  navigator.share({
+                    title: 'Ayamonte Cofrade',
+                    text: '¡Descubre la Semana Santa de Ayamonte con esta App!',
+                    url: window.location.origin
+                  }).catch(console.error);
+                } else {
+                  navigator.clipboard.writeText(window.location.origin);
+                  alert('Enlace copiado al portapapeles');
+                }
+              }}
+              className="bg-[#4B0082] p-4 rounded-2xl shadow-md flex flex-col justify-between h-28 relative overflow-hidden text-white group cursor-pointer hover:scale-[1.02] transition-transform active:scale-95"
+            >
               <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
               <div className="bg-[#D4AF37] w-8 h-8 rounded-full flex items-center justify-center text-[#300050] mb-2 relative z-10 shadow-sm">
-                <MapIcon size={16} />
+                <Share2 size={16} />
               </div>
               <div className="relative z-10">
-                <h4 className="font-medium text-white text-sm leading-none mb-1">Mapa</h4>
-                <p className="text-[9px] text-purple-200 font-medium">En vivo</p>
+                <h4 className="font-medium text-white text-sm leading-none mb-1">Compartir</h4>
+                <p className="text-[9px] text-purple-200 font-medium">Invita a amigos</p>
               </div>
             </div>
           </div>
