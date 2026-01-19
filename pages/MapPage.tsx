@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, MapPin, ChevronLeft, Calendar, Navigation, Info, ChevronUp, ChevronDown } from 'lucide-react';
 import { Paso, Brotherhood } from '../types';
@@ -62,31 +62,49 @@ const MapPage: React.FC<MapProps> = ({ pasos, brotherhoods }) => {
       maxZoom: 19,
     }).addTo(map);
 
-    const routeCoords: [number, number][] = [];
+    // ---------- Optimized route coordinate generation ----------
+    // Helper to reduce number of points if the route is very long
+    const simplifyCoords = (coords: [number, number][], maxPoints = 300): [number, number][] => {
+      if (coords.length <= maxPoints) return coords;
+      const step = Math.ceil(coords.length / maxPoints);
+      return coords.filter((_c, idx) => idx % step === 0);
+    };
 
-    // Prioritize brotherhood route data
-    const activeRouteCoords = brotherhood?.route_coords || paso.route_coords;
-    const activeRouteNames = brotherhood?.route || paso.route;
+    const routeCoords: [number, number][] = useMemo(() => {
+      // Prioritize brotherhood route data
+      const activeRouteCoords = brotherhood?.route_coords || paso?.route_coords;
+      const activeRouteNames = brotherhood?.route || paso?.route;
 
-    if (activeRouteCoords && activeRouteCoords.length > 0) {
-      activeRouteCoords.forEach(coord => routeCoords.push(coord));
-    } else {
-      activeRouteNames.forEach((street) => {
-        const cleanStreet = street.replace(/\(.*\)/, '').trim();
-        const key = Object.keys(AYAMONTE_COORDS).find(k => cleanStreet.includes(k) || k.includes(cleanStreet));
-        if (key) routeCoords.push(AYAMONTE_COORDS[key]);
-      });
-    }
+      const rawCoords: [number, number][] = [];
 
+      if (activeRouteCoords && activeRouteCoords.length > 0) {
+        activeRouteCoords.forEach(coord => rawCoords.push(coord));
+      } else if (activeRouteNames && activeRouteNames.length > 0) {
+        activeRouteNames.forEach((street) => {
+          const cleanStreet = street.replace(/\(.*\)/, '').trim();
+          const key = Object.keys(AYAMONTE_COORDS).find(k => cleanStreet.includes(k) || k.includes(cleanStreet));
+          if (key) rawCoords.push(AYAMONTE_COORDS[key]);
+        });
+      }
+
+      // Simplify to avoid rendering thousands of points
+      return simplifyCoords(rawCoords);
+    }, [paso?.id, brotherhood?.id]);
+
+    // ---------- Render polyline with optional simplification ----------
     if (routeCoords.length > 0) {
       const polyline = L.polyline(routeCoords, {
         color: '#4B0082',
         weight: 6,
         opacity: 0.8,
         lineCap: 'round',
-        lineJoin: 'round'
+        lineJoin: 'round',
+        // Reduce rendering load for very dense routes
+        smoothFactor: 1.5,
+        noClip: true
       }).addTo(map);
 
+      // Start marker
       L.marker(routeCoords[0], {
         icon: L.divIcon({
           className: 'custom-icon',
@@ -95,6 +113,7 @@ const MapPage: React.FC<MapProps> = ({ pasos, brotherhoods }) => {
         })
       }).addTo(map);
 
+      // End marker
       L.marker(routeCoords[routeCoords.length - 1], {
         icon: L.divIcon({
           className: 'custom-icon',
@@ -103,6 +122,7 @@ const MapPage: React.FC<MapProps> = ({ pasos, brotherhoods }) => {
         })
       }).addTo(map);
 
+      // Ajustar vista al polyline
       map.fitBounds(polyline.getBounds(), { padding: [100, 100] });
     }
 
