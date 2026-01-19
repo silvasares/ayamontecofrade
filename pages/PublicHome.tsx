@@ -174,8 +174,58 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
   }, [news, now]);
 
   const { activePasos, nextPaso } = useMemo(() => {
-    const currentDayIdx = now.getDay();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const getOrderIndex = (dayName: string): number => {
+      // 1. Intentar buscar en 'days' (DB)
+      if (days && days.length > 0) {
+        const d = days.find(day => day.name === dayName);
+        if (d) return d.order_index;
+      }
+
+      // 2. Fallback mapa estático
+      const map: Record<string, number> = {
+        [Day.VIERNES_DOLORES]: 0,
+        [Day.SABADO_PASION]: 1,
+        [Day.DOMINGO_RAMOS]: 2,
+        [Day.LUNES_SANTO]: 3,
+        [Day.MARTES_SANTO]: 4,
+        [Day.MIERCOLES_SANTO]: 5,
+        [Day.JUEVES_SANTO]: 6,
+        [Day.MADRUGA]: 7,
+        [Day.VIERNES_SANTO]: 8,
+        [Day.SABADO_SANTO]: 9,
+        [Day.DOMINGO_RESURRECCION]: 10
+      };
+      return map[dayName] ?? 99; // 99 para días desconocidos (final de la lista)
+    };
+
+    // Determinar si HOY es un día de procesión específico
+    let currentOrderIndex = -1;
+    // 1. Buscamos coincidencia exacta de fecha
+    if (days && days.length > 0) {
+      const todaySchedule = days.find(d => d.date && isSameDate(now, d.date));
+      if (todaySchedule) {
+        currentOrderIndex = todaySchedule.order_index;
+      }
+    }
+
+    // 2. Si no hay fecha exacta configurada, intentamos inferir por día de la semana (fallback débil)
+    // Solo si estamos "cerca" de Semana Santa o asumiendo que estamos en ella si se usa la app
+    if (currentOrderIndex === -1 && (!days || days.every(d => !d.date))) {
+      // Mapa reverso básico solo para días únicos (Lunes-Jueves y Sábado)
+      // Domingo y Viernes son ambiguos (Dolores/Santo/Resurrección), se asume el primero por defecto si no hay fechas
+      const dayOfWeek = now.getDay(); // 0 Dom, 1 Lun...
+      const weekMap: Record<number, number> = {
+        1: 3, // Lunes Santo
+        2: 4, // Martes Santo
+        3: 5, // Miercoles Santo
+        4: 6, // Jueves Santo (o Madrugá noche)
+        6: 9, // Sábado Santo (o Pasión - ambigüedad)
+      };
+      if (weekMap[dayOfWeek] !== undefined) {
+        currentOrderIndex = weekMap[dayOfWeek];
+      }
+    }
 
     const active = pasos.filter(p => {
       // 1. Priority: Manual override on Paso
@@ -227,6 +277,7 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
 
       // 3. Fallback: Day Index match (Standard weekly schedule)
       const pDayIdx = getDayIndex(realDayName);
+      const currentDayIdx = now.getDay();
       if (pDayIdx !== currentDayIdx) return false;
 
       const start = getMinutes(p.startTime);
@@ -237,18 +288,60 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
     });
 
     let candidates = pasos.filter(p => !active.find(a => a.id === p.id));
+
     candidates.sort((a, b) => {
-      // Advanced sorting could be implemented here using dates if available
-      const dayA = getDayIndex(getPasoDay(a));
-      const dayB = getDayIndex(getPasoDay(b));
-      let diffA = dayA - currentDayIdx;
-      if (diffA < 0) diffA += 7;
-      if (dayA === currentDayIdx && getMinutes(a.startTime) < currentMinutes) diffA += 7;
-      let diffB = dayB - currentDayIdx;
-      if (diffB < 0) diffB += 7;
-      if (dayB === currentDayIdx && getMinutes(b.startTime) < currentMinutes) diffB += 7;
-      if (diffA !== diffB) return diffA - diffB;
-      return getMinutes(a.startTime) - getMinutes(b.startTime);
+      const dayNameA = getPasoDay(a);
+      const dayNameB = getPasoDay(b);
+      const idxA = getOrderIndex(dayNameA);
+      const idxB = getOrderIndex(dayNameB);
+
+      if (idxA !== idxB) {
+        // Si HOY es un día de procesión identificado:
+        // Los días con índice < hoy ya pasaron (se van al final -> next year weights)
+        // Los días con índice > hoy son futuro cercano (weight 0)
+
+        let weightA = 0;
+        let weightB = 0;
+
+        if (currentOrderIndex !== -1) {
+          if (idxA < currentOrderIndex) weightA = 1000;
+          if (idxB < currentOrderIndex) weightB = 1000;
+        } else {
+          // Si hoy NO es un día de procesión, hay que saber si estamos ANTES o DESPUÉS de todo
+          // Usamos la fecha del primer día como referencia si existe
+          const firstDay = days?.find(d => d.order_index === 0);
+          if (firstDay && firstDay.date) {
+            const firstDate = new Date(firstDay.date);
+            // Si hoy es después del inicio (y no coincidió con ningún día), asumimos que estamos POST-Semana Santa o en huecos
+            // Si estamos antes, el orden natural (0,1,2...) es correcto.
+            // Si estamos después (ej. Mayo), todo es futuro (próximo año), orden natural ok.
+            // Simplificación: Orden natural siempre gana si no estamos "dentro" de la semana.
+          }
+        }
+
+        return (idxA + weightA) - (idxB + weightB);
+      }
+
+      // Si es el Mismo Día (mismo OrderIndex)
+      const startA = getMinutes(a.startTime);
+      const startB = getMinutes(b.startTime);
+
+      // Si es HOY (y no está activo porque está en candidates):
+      // Puede ser que no haya empezado (Futuro Hoy) o que ya haya terminado (Pasado Hoy -> Next Year)
+      if (idxA === currentOrderIndex) {
+        const passedA = startA < currentMinutes; // Ya pasó la hora de salida
+        const passedB = startB < currentMinutes;
+
+        // Priorizar los que NO han pasado (Futuro Hoy) sobre los que sí (Pasado Hoy)
+        if (passedA && !passedB) return 1; // A ya pasó, B no -> B va antes
+        if (!passedA && passedB) return -1; // A no pasó, B si -> A va antes
+
+        // Si ambos pasaron o ambos son futuros, orden cronológico
+        return startA - startB;
+      }
+
+      // Días distintos a hoy: orden cronológico simple
+      return startA - startB;
     });
 
     return { activePasos: active, nextPaso: candidates[0] || null };
@@ -545,26 +638,6 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
               <div>
                 <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-none mb-1">Asistente IA</h4>
                 <p className="text-[9px] text-gray-400 font-medium">Pregunta tus dudas</p>
-              </div>
-            </Link>
-
-            <Link to="/calendar" className="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between h-28 group hover:border-orange-200 transition-all">
-              <div className="bg-orange-50 dark:bg-orange-900/20 w-8 h-8 rounded-full flex items-center justify-center text-orange-600 dark:text-orange-400 mb-2">
-                <Calendar size={16} />
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-none mb-1">Agenda</h4>
-                <p className="text-[9px] text-gray-400 font-medium">Horarios y días</p>
-              </div>
-            </Link>
-
-            <Link to="/news" className="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between h-28 group hover:border-blue-200 transition-all">
-              <div className="bg-blue-50 dark:bg-blue-900/20 w-8 h-8 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 mb-2">
-                <Newspaper size={16} />
-              </div>
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-none mb-1">Noticias</h4>
-                <p className="text-[9px] text-gray-400 font-medium">Última hora</p>
               </div>
             </Link>
 
