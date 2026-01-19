@@ -342,8 +342,11 @@ const AppContent = () => {
   );
 };
 
+import ScrollToTop from './components/ScrollToTop';
+
 const App = () => (
   <HashRouter>
+    <ScrollToTop />
     <AppContent />
   </HashRouter>
 );

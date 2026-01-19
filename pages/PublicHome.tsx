@@ -684,7 +684,7 @@ const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, d
           </div>
           <div className="space-y-3">
             {visibleNews.map(item => (
-              <Link to="/news" key={item.id} className="bg-white dark:bg-[#1E1E1E] p-3 rounded-2xl flex gap-3 border border-gray-100 dark:border-gray-800 shadow-sm active:scale-[0.99] transition-transform">
+              <Link to="/news" state={{ scrollToId: item.id }} key={item.id} className="bg-white dark:bg-[#1E1E1E] p-3 rounded-2xl flex gap-3 border border-gray-100 dark:border-gray-800 shadow-sm active:scale-[0.99] transition-transform">
                 <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-100"><img src={item.image} className="w-full h-full object-cover" alt={item.title} /></div>
                 <div className="flex flex-col justify-center min-w-0 py-0.5">
                   <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1">

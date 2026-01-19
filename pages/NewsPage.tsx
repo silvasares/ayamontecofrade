@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Calendar, ChevronRight, Send, User, MessageSquare, Phone, X, CheckCircle, Newspaper, Clock } from 'lucide-react';
 import { News } from '../types';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
 
 interface Props {
@@ -106,6 +107,35 @@ const NewsPage: React.FC<Props> = ({ news }) => {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedNews = sortedNews.slice(startIndex, endIndex);
 
+  // inside component
+  const location = useLocation();
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+
+  // Effect to handle scroll-to-news from home page
+  React.useEffect(() => {
+    if (location.state && (location.state as any).scrollToId && sortedNews.length > 0) {
+      const targetId = (location.state as any).scrollToId;
+      const index = sortedNews.findIndex(n => n.id === targetId);
+
+      if (index !== -1) {
+        // Calculate page
+        const targetPage = Math.floor(index / ITEMS_PER_PAGE) + 1;
+        setCurrentPage(targetPage);
+        setHighlightedId(targetId);
+
+        // Wait for render then scroll
+        setTimeout(() => {
+          const element = document.getElementById(`news-${targetId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Remove highlight after a few seconds
+            setTimeout(() => setHighlightedId(null), 3000);
+          }
+        }, 500); // Small delay to allow page change/render
+      }
+    }
+  }, [location.state, sortedNews.length]); // Depend on sortedNews.length to ensure data is loaded
+
   const [featuredNews, ...otherNews] = paginatedNews;
 
   return (
@@ -129,7 +159,7 @@ const NewsPage: React.FC<Props> = ({ news }) => {
           <>
             {/* ARTÍCULO DESTACADO */}
             {featuredNews && (
-              <article className="group">
+              <article id={`news-${featuredNews.id}`} className={`group ${highlightedId === featuredNews.id ? 'ring-4 ring-[#D4AF37] transition-all' : ''}`}>
                 <div className="relative h-[400px] md:h-[500px] rounded-3xl overflow-hidden shadow-2xl">
                   <img
                     src={featuredNews.image}
@@ -177,8 +207,9 @@ const NewsPage: React.FC<Props> = ({ news }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {otherNews.map((item) => (
                   <article
+                    id={`news-${item.id}`}
                     key={item.id}
-                    className="bg-white dark:bg-[#1E1E1E] rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 group border border-gray-100 dark:border-gray-800"
+                    className={`bg-white dark:bg-[#1E1E1E] rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 group border border-gray-100 dark:border-gray-800 ${highlightedId === item.id ? 'ring-4 ring-[#D4AF37]' : ''}`}
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img
