@@ -239,7 +239,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                             {mainInfo.elder_brother && (
                                 <div className="flex items-center gap-4 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl border border-gray-100 dark:border-gray-800">
                                     <User className="text-goldCofrade" size={20} />
-                                    <div className="min-w-0"><p className="text-[10px] font-black text-gray-400 uppercase">Hno. Mayor</p><p className="text-sm font-bold dark:text-white truncate">{mainInfo.elder_brother}</p></div>
+                                    <div className="min-w-0"><p className="text-[10px] font-black text-gray-400 uppercase">Hno. Mayor</p><p className="text-sm font-bold dark:text-white">{mainInfo.elder_brother}</p></div>
                                 </div>
                             )}
                         </div>
