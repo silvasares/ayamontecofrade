@@ -154,15 +154,27 @@
             opacity: 0.6;
         }
 
-        .dark .leaflet-layer:not(.force-light-map .leaflet-layer),
-        .dark .leaflet-control-zoom-in:not(.force-light-map .leaflet-control-zoom-in),
-        .dark .leaflet-control-zoom-out:not(.force-light-map .leaflet-control-zoom-out),
-        .dark .leaflet-control-attribution:not(.force-light-map .leaflet-control-attribution) {
+        .dark .leaflet-layer,
+        .dark .leaflet-control-zoom-in,
+        .dark .leaflet-control-zoom-out,
+        .dark .leaflet-control-attribution {
             filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        .dark .force-light-map .leaflet-layer,
+        .dark .force-light-map .leaflet-control-zoom-in,
+        .dark .force-light-map .leaflet-control-zoom-out,
+        .dark .force-light-map .leaflet-control-attribution {
+            filter: none !important;
         }
 
         .dark .leaflet-container {
             background: #242424;
+        }
+
+        .dark .force-light-map.leaflet-container,
+        .dark .force-light-map .leaflet-container {
+            background: #f0f0f0 !important;
         }
     </style>
 </head>

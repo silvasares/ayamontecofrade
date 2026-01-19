@@ -130,7 +130,7 @@ const MapPage: React.FC<MapProps> = ({ pasos, brotherhoods }) => {
   return (
     <div className="fixed inset-0 bg-luxuryWhite dark:bg-[#0A0A0A] z-[50] overflow-hidden">
 
-      <div ref={mapRef} className="absolute inset-0 z-0"></div>
+      <div ref={mapRef} className="absolute inset-0 z-0 force-light-map"></div>
 
       <div className="absolute top-0 left-0 right-0 z-[100] flex justify-between items-start pointer-events-none p-6 pt-safe">
         <button
@@ -158,8 +158,8 @@ const MapPage: React.FC<MapProps> = ({ pasos, brotherhoods }) => {
           <div className="p-8 pb-4 shrink-0">
             <div className="flex justify-between items-start mb-4">
               <div className="min-w-0 flex-grow">
-                <p className="text-[10px] text-goldCofrade font-black uppercase tracking-[0.3em] mb-1">Paso y Recorrido</p>
-                <h2 className="text-2xl md:text-3xl font-cofrade text-purpleCofrade dark:text-goldCofrade leading-tight truncate pr-4">{paso.name}</h2>
+                <p className="text-[10px] text-goldCofrade font-black uppercase tracking-[0.3em] mb-1">Hermandad y Recorrido</p>
+                <h2 className="text-2xl md:text-3xl font-cofrade text-purpleCofrade dark:text-goldCofrade leading-tight truncate pr-4">{brotherhood?.name || paso.name}</h2>
               </div>
               <div className="flex gap-2">
                 <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-2xl flex flex-col items-center min-w-[60px] border border-gray-100 dark:border-gray-800">
