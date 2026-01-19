@@ -340,10 +340,12 @@ const AppContent = () => {
 };
 
 import ScrollToTop from './components/ScrollToTop';
+import InstallPWA from './components/InstallPWA';
 
 const App = () => (
   <HashRouter>
     <ScrollToTop />
+    <InstallPWA />
     <AppContent />
   </HashRouter>
 );
