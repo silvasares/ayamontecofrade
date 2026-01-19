@@ -7,12 +7,10 @@ import { Paso, Day, Brotherhood } from '../types';
 interface Props {
   pasos: Paso[];
   days: any[];
-  favorites: string[];
-  toggleFavorite: (id: string) => void;
   brotherhoods: Brotherhood[];
 }
 
-const CalendarPage: React.FC<Props> = ({ pasos, days, favorites, toggleFavorite, brotherhoods }) => {
+const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
   const [selectedDay, setSelectedDay] = useState<string>('');
   const location = useLocation();
 

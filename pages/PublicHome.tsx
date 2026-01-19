@@ -1,15 +1,13 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Clock, ChevronRight, Bot, X, ExternalLink, Calendar, Newspaper, Heart, Map as MapIcon, Sparkles, AlertCircle, Bell, ShieldCheck, Lock, Navigation, CloudSun, Search, CloudRain, Check, Share2 } from 'lucide-react';
+import { Clock, ChevronRight, Bot, X, ExternalLink, Calendar, Newspaper, Map as MapIcon, Sparkles, AlertCircle, Bell, ShieldCheck, Lock, Navigation, CloudSun, Search, CloudRain, Check, Share2 } from 'lucide-react';
 import { getAyamonteWeather } from '../services/weatherService';
 import { WeatherData, Paso, Day, Brotherhood, DaySchedule } from '../types';
 
 interface Props {
   pasos: Paso[];
   news: any[];
-  favorites: string[];
-  toggleFavorite: (id: string) => void;
   defaultCover: string;
   departureStatus: string;
   brotherhoods: Brotherhood[];
@@ -91,7 +89,7 @@ const isSameDate = (date1: Date, dateStr?: string) => {
     date1.getDate() === d2.getDate();
 };
 
-const PublicHome: React.FC<Props> = ({ pasos, news, favorites, toggleFavorite, defaultCover, departureStatus, brotherhoods, days }) => {
+const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatus, brotherhoods, days }) => {
   const [forecast, setForecast] = useState<WeatherData[]>([]);
   const [loadingWeather, setLoadingWeather] = useState(true);
   const [now, setNow] = useState(getSpainTime());

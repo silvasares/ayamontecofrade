@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  Calendar, Newspaper, Heart, Settings, Home, Bot, ChevronLeft, Sun, Moon,
+  Calendar, Newspaper, Settings, Home, Bot, ChevronLeft, Sun, Moon,
   ArrowUp, Bell, X, Volume2, VolumeX, CheckCircle as CheckIcon, AlertTriangle,
   Shield, Map, LogIn, MapPin, Navigation, Lock, Landmark, Power
 } from 'lucide-react';
@@ -13,7 +13,6 @@ import BrotherhoodPage from './pages/BrotherhoodPage';
 import NewsPage from './pages/NewsPage';
 import AdminDashboard from './pages/AdminDashboard';
 import PatrimonyPage from './pages/PatrimonyPage';
-import FavoritesPage from './pages/FavoritesPage';
 import MapPage from './pages/MapPage';
 import AIAssistant from './pages/AIAssistant';
 import { supabase } from './supabase';
@@ -113,7 +112,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: { isO
 const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isRoot = ['/', '/calendar', '/news', '/favorites', '/patrimony'].includes(location.pathname);
+  const isRoot = ['/', '/calendar', '/news', '/patrimony'].includes(location.pathname);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
   if (location.pathname.startsWith('/admin')) return null;
@@ -199,7 +198,6 @@ const DesktopSidebar = () => {
         <Link to="/" className={getLinkStyle('/')}><Home size={20} /> Inicio</Link>
         <Link to="/calendar" className={getLinkStyle('/calendar')}><Calendar size={20} /> Agenda</Link>
         <Link to="/news" className={getLinkStyle('/news')}><Newspaper size={20} /> Noticias</Link>
-        <Link to="/favorites" className={getLinkStyle('/favorites')}><Heart size={20} /> Favoritos</Link>
         <div className="h-px bg-white/10 my-4 mx-2"></div>
         <Link to="/patrimony" className={getLinkStyle('/patrimony')}><Landmark size={20} /> Patrimonio</Link>
       </nav>
@@ -217,7 +215,7 @@ const DesktopSidebar = () => {
 const AppContent = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
-  const [favorites, setFavorites] = useState<string[]>([]);
+
 
   const [soundEnabled, setSoundEnabled] = useState(() => safeStorage.getItem('ac_sound', 'true') !== 'false');
   const [pasos, setPasos] = useState<Paso[]>([]);
@@ -294,13 +292,12 @@ const AppContent = () => {
 
       <main className={`flex-grow ${isAdmin ? '' : 'lg:ml-72 pb-32 pt-0 lg:pt-0'}`}>
         <Routes>
-          <Route path="/" element={<PublicHome pasos={pasos} news={news} favorites={favorites} toggleFavorite={(id) => setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id])} defaultCover="" departureStatus="" brotherhoods={brotherhoods} days={days} />} />
-          <Route path="/calendar" element={<CalendarPage pasos={pasos} days={days} favorites={favorites} toggleFavorite={(id) => setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id])} brotherhoods={brotherhoods} />} />
-          <Route path="/paso/:id" element={<PasoDetailPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} favorites={favorites} toggleFavorite={() => { }} />} />
+          <Route path="/" element={<PublicHome pasos={pasos} news={news} defaultCover="" departureStatus="" brotherhoods={brotherhoods} days={days} />} />
+          <Route path="/calendar" element={<CalendarPage pasos={pasos} days={days} brotherhoods={brotherhoods} />} />
+          <Route path="/paso/:id" element={<PasoDetailPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
           <Route path="/brotherhood/:name" element={<BrotherhoodPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
           <Route path="/news" element={<NewsPage news={news} />} />
           <Route path="/patrimony" element={<PatrimonyPage temples={temples} posters={posters} />} />
-          <Route path="/favorites" element={<FavoritesPage pasos={pasos} favorites={favorites} toggleFavorite={(id) => setFavorites(f => f.includes(id) ? f.filter(x => x !== id) : [...f, id])} />} />
           <Route path="/map/:id" element={<MapPage pasos={pasos} brotherhoods={brotherhoods} />} />
           <Route path="/assistant" element={<AIAssistant />} />
           <Route path="/admin/*" element={<AdminDashboard updatePasos={fetchData} updateNews={fetchData} temples={temples} updateTemples={fetchData} updateBands={fetchData} updateDays={fetchData} days={days} />} />

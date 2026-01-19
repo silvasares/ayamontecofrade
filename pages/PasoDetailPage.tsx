@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
-    Heart, Clock, MapPin, Music, History, Info, Map as MapIcon,
+    Clock, MapPin, Music, History, Info, Map as MapIcon,
     ChevronLeft, ChevronRight, Shield, User, Users, Calendar, Flag, Home as HomeIcon, Navigation, Compass, ArrowLeft,
     Image as ImageIcon, X, ExternalLink, Sparkles, Flower, Shirt
 } from 'lucide-react';
@@ -13,11 +13,9 @@ interface Props {
     temples: Temple[];
     bands: Band[];
     brotherhoods: Brotherhood[];
-    favorites: string[];
-    toggleFavorite: (id: string) => void;
 }
 
-const PasoDetailPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods, favorites, toggleFavorite }) => {
+const PasoDetailPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods }) => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
@@ -187,15 +185,7 @@ const PasoDetailPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods, 
                             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white leading-tight font-cofrade break-words">{currentPaso.name}</h2>
                             {author && <p className="text-xs text-gray-400 mt-1 italic">Obra de {author}</p>}
                         </div>
-                        <button
-                            onClick={() => toggleFavorite(currentPaso.id)}
-                            className={`p-4 sm:p-5 rounded-[20px] sm:rounded-[24px] transition-all shrink-0 shadow-xl ${favorites.includes(currentPaso.id)
-                                ? 'bg-red-500 text-white'
-                                : 'bg-white dark:bg-[#1A1A1A] text-gray-300 dark:text-gray-600 border border-goldCofrade/10'
-                                }`}
-                        >
-                            <Heart size={20} fill={favorites.includes(currentPaso.id) ? "currentColor" : "none"} />
-                        </button>
+
                     </div>
 
                     <div className="mb-12">
