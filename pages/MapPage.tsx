@@ -203,19 +203,16 @@ const MapPage: React.FC<MapProps> = ({ pasos, brotherhoods }) => {
       </div>
 
       <style>{`
-            .dark .leaflet-layer {
-                filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-            }
-            .dark .leaflet-container {
-                background: #0A0A0A !important;
-            }
-            .custom-scrollbar::-webkit-scrollbar {
-                width: 4px;
-            }
-            .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: rgba(212, 175, 55, 0.2);
-                border-radius: 10px;
-            }
+          .leaflet-container {
+            background: #f0f0f0 !important;
+          }
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.2);
+            border-radius: 10px;
+          }
         `}</style>
     </div>
   );
