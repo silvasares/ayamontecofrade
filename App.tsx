@@ -118,18 +118,115 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
   if (location.pathname.startsWith('/admin')) return null;
 
   const performExit = () => {
-    // Intentos agresivos de cierre para diferentes entornos
+    setShowExitConfirm(false);
+
+    // Estrategia multi-nivel para cerrar la app
+
+    // 1. Intentar cerrar con window.close() (funciona en algunos casos)
     try {
       window.close();
-      if (window.top) window.top.close();
-      if ((navigator as any).app && (navigator as any).app.exitApp) {
-        (navigator as any).app.exitApp();
+    } catch (e) {
+      console.log('window.close() bloqueado');
+    }
+
+    // 2. Para apps WebView de Android (Kodular, etc)
+    try {
+      if ((window as any).Android && (window as any).Android.closeApp) {
+        (window as any).Android.closeApp();
+        return;
       }
     } catch (e) {
-      console.warn("Cierre automático bloqueado por el navegador/OS", e);
+      console.log('Android.closeApp() no disponible');
     }
-    // NOTA: Eliminamos la redirección a 'about:blank' para no mostrar página blanca si falla
-    setShowExitConfirm(false);
+
+    // 3. Para Cordova/PhoneGap
+    try {
+      if ((navigator as any).app && (navigator as any).app.exitApp) {
+        (navigator as any).app.exitApp();
+        return;
+      }
+    } catch (e) {
+      console.log('navigator.app.exitApp() no disponible');
+    }
+
+    // 4. Para aplicaciones instaladas vía Chrome/Edge
+    try {
+      if ((window as any).chrome && (window as any).chrome.runtime) {
+        (window as any).chrome.runtime.reload();
+      }
+    } catch (e) {
+      console.log('chrome.runtime no disponible');
+    }
+
+    // 5. Redirigir a una página de "cerrada" si todo falla
+    setTimeout(() => {
+      // Crear una página HTML mínima de despedida
+      document.body.innerHTML = `
+        <div style="
+          position: fixed;
+          inset: 0;
+          background: linear-gradient(135deg, #300050 0%, #4B0082 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          color: white;
+          font-family: system-ui, -apple-system, sans-serif;
+          text-align: center;
+          padding: 20px;
+        ">
+          <div style="
+            background: white;
+            color: #300050;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(212, 175, 55, 0.3);
+          ">
+            ✓
+          </div>
+          <h1 style="
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 15px 0;
+            color: #D4AF37;
+          ">
+            Aplicación Cerrada
+          </h1>
+          <p style="
+            font-size: 16px;
+            opacity: 0.9;
+            margin: 0 0 30px 0;
+            max-width: 300px;
+            line-height: 1.6;
+          ">
+            Puedes cerrar esta pestaña o ventana manualmente
+          </p>
+          <div style="
+            font-size: 12px;
+            opacity: 0.6;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+          ">
+            Ayamonte Cofrade
+          </div>
+        </div>
+      `;
+
+      // Intentar cerrar una última vez después de mostrar el mensaje
+      setTimeout(() => {
+        try {
+          window.close();
+        } catch (e) {
+          // Si no puede cerrar, la página de despedida ya está visible
+        }
+      }, 500);
+    }, 300);
   };
 
   return (
