@@ -24,9 +24,30 @@ const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
     if (dayParam && daysList.some(d => d.name === dayParam)) {
       setSelectedDay(dayParam);
     } else if (!selectedDay && daysList.length > 0) {
-      // Intentar seleccionar Domingo de Ramos, si no el primero
-      const dr = daysList.find(d => d.name === Day.DOMINGO_RAMOS);
-      setSelectedDay(dr ? dr.name : daysList[0].name);
+      // Encontrar el día más próximo que no haya pasado (hoy o futuro)
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      const upcomingDay = daysList.find(d => {
+        if (!d.date) return false;
+        const dayDate = new Date(d.date);
+        dayDate.setHours(0, 0, 0, 0);
+        return dayDate >= now;
+      });
+
+      if (upcomingDay) {
+        setSelectedDay(upcomingDay.name);
+      } else {
+        // Si todos los días han pasado, seleccionamos el último día de la agenda
+        // Si no tienen fecha, intentamos Domingo de Ramos o el primero por defecto
+        const lastDayWithDate = [...daysList].reverse().find(d => d.date);
+        if (lastDayWithDate) {
+          setSelectedDay(lastDayWithDate.name);
+        } else {
+          const dr = daysList.find(d => d.name === Day.DOMINGO_RAMOS);
+          setSelectedDay(dr ? dr.name : daysList[0].name);
+        }
+      }
     }
   }, [daysList, location.search]);
 
