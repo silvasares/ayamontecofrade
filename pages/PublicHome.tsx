@@ -699,12 +699,6 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
           </div>
         </section>
 
-        {/* FOOTER DISCRETO */}
-        <footer className="pt-4 text-center pb-6 opacity-40">
-          <Link to="/admin" className="inline-flex items-center gap-1.5 text-[8px] font-black uppercase tracking-widest text-gray-400 hover:text-[#4B0082] transition-colors py-2 px-4">
-            <Lock size={8} /> Acceso Interno
-          </Link>
-        </footer>
       </div>
     </div>
   );
