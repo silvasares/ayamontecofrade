@@ -239,7 +239,7 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
         message="¿Estás seguro de que deseas cerrar la aplicación?"
       />
       <header className="fixed top-0 left-0 right-0 h-16 bg-[#300050]/95 backdrop-blur-xl text-white flex items-center px-4 z-[200] border-b border-goldCofrade/20 shadow-lg justify-between">
-        <div className="w-20 flex justify-start gap-1">
+        <div className="w-10 flex justify-start">
           {!isRoot && (
             <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
               <ChevronLeft size={22} className="text-goldCofrade" />
@@ -248,15 +248,12 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
         </div>
 
         <div className="flex-1 flex items-center justify-center overflow-hidden px-2">
-          <h1 className="font-cofrade text-base font-bold tracking-[0.05em] text-white whitespace-nowrap uppercase truncate text-center">
+          <h1 className="font-cofrade text-xs sm:text-sm font-bold tracking-wider text-white uppercase text-center leading-tight">
             {headerTitle}
           </h1>
         </div>
 
-        <div className="w-20 flex justify-end items-center gap-1">
-          <button onClick={() => setSoundEnabled(!soundEnabled)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            {soundEnabled ? <Volume2 size={18} className="text-goldCofrade" /> : <VolumeX size={18} className="text-gray-400" />}
-          </button>
+        <div className="w-10 flex justify-end items-center">
           <button onClick={() => setShowExitConfirm(true)} className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-90 hover:opacity-100" title="Salir de la App">
             <Power size={18} className="text-red-400" />
           </button>
