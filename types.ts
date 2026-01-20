@@ -48,8 +48,8 @@ export interface Paso {
   brotherhood: string;
   description: string;
   history: string;
-  foundation_year?: number;
-  foundationYear?: number;
+  foundation_year?: string;
+  foundationYear?: string;
   main_image?: string;
   mainImage?: string;
   gallery: string[];

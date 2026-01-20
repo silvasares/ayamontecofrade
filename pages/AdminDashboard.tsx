@@ -461,7 +461,7 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
       history: editing.history || '',
       floral_arrangement: editing.floral_arrangement || '',
       gallery: editing.gallery || [],
-      foundation_year: editing.foundation_year ? parseInt(editing.foundation_year) : null,
+      foundation_year: editing.foundation_year || null,
       brotherhood_id: editing.brotherhood_id || null,
       brotherhood: brotherhoods.find(b => b.id === editing.brotherhood_id)?.name || '',
       technical_data: {
@@ -508,7 +508,7 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
                   <option value="">Seleccionar Hermandad</option>{brotherhoods.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
-              <div><label className={LABEL_STYLE}>Año del Titular / Trono</label><input type="number" className={INPUT_STYLE} value={editing.foundation_year || ''} onChange={e => setEditing({ ...editing, foundation_year: e.target.value })} /></div>
+              <div><label className={LABEL_STYLE}>Año del Titular / Trono</label><input className={INPUT_STYLE} value={editing.foundation_year || ''} onChange={e => setEditing({ ...editing, foundation_year: e.target.value })} placeholder="Ej. S. XVIII, 1940..." /></div>
               <div><label className={LABEL_STYLE}>Exorno Floral</label><input className={INPUT_STYLE} value={editing.floral_arrangement || ''} onChange={e => setEditing({ ...editing, floral_arrangement: e.target.value })} /></div>
               <div className="md:col-span-2"><label className={LABEL_STYLE}>Imagen Principal (URL)</label><input className={INPUT_STYLE} value={editing.main_image || ''} onChange={e => setEditing({ ...editing, main_image: e.target.value })} /></div>
 
