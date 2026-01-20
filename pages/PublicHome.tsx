@@ -168,7 +168,7 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
 
         return true;
       })
-      .slice(0, 3);
+      .slice(0, 4);
   }, [news, now]);
 
   const { activePasos, nextPaso } = useMemo(() => {
