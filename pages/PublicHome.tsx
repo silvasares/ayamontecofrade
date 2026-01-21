@@ -449,7 +449,9 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                       <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 mb-2">
                         <Clock size={10} className="text-goldCofrade" />
-                        <span className="text-white text-[9px] font-bold tracking-wide uppercase">{paso.startTime} - {paso.arrivalTime}</span>
+                        <span className="text-white text-[9px] font-bold tracking-wide uppercase">
+                          {(paso.startTime || b?.startTime || '--:--')} - {(paso.arrivalTime || b?.arrivalTime || '--:--')}
+                        </span>
                       </div>
                       <h2 className="text-lg font-cofrade font-medium text-white leading-tight mb-1 drop-shadow-sm tracking-wide line-clamp-2">{paso.brotherhood}</h2>
                       <p className="text-white/70 text-xs font-serif italic line-clamp-1 mb-4">{paso.name}</p>
@@ -484,127 +486,130 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
               <div className="absolute inset-0 bg-gradient-to-t from-[#1a0b2e] via-transparent to-transparent"></div>
 
               <div className="absolute inset-0 flex flex-col justify-end p-6">
-                {nextPaso ? (
-                  <div className="w-full">
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      <div className="flex items-center gap-1.5 bg-[#D4AF37]/90 text-[#300050] px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">
-                        <span className="text-[9px] font-bold uppercase tracking-wider">Próxima Salida</span>
-                      </div>
+                {nextPaso ? (() => {
+                  const b = brotherhoods.find(br => br.id === nextPaso.brotherhood_id || br.name === nextPaso.brotherhood);
+                  return (
+                    <div className="w-full">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <div className="flex items-center gap-1.5 bg-[#D4AF37]/90 text-[#300050] px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">
+                          <span className="text-[9px] font-bold uppercase tracking-wider">Próxima Salida</span>
+                        </div>
 
-                      {(() => {
-                        const pDay = getPasoDay(nextPaso);
-                        // 1. Verificar si la fecha es lejana (más de 4 días) para no inventar datos
-                        // Intentamos buscar la fecha exacta en la configuración de días
-                        let isFar = false;
-                        if (days && days.length > 0) {
-                          const scheduleDay = days.find(d => d.name === pDay);
-                          if (scheduleDay && scheduleDay.date) {
-                            const eventDate = new Date(scheduleDay.date);
-                            const now = new Date();
-                            // Calculamos diferencia en días
-                            const diffTime = eventDate.getTime() - now.getTime();
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        {(() => {
+                          const pDay = getPasoDay(nextPaso);
+                          // 1. Verificar si la fecha es lejana (más de 4 días) para no inventar datos
+                          // Intentamos buscar la fecha exacta en la configuración de días
+                          let isFar = false;
+                          if (days && days.length > 0) {
+                            const scheduleDay = days.find(d => d.name === pDay);
+                            if (scheduleDay && scheduleDay.date) {
+                              const eventDate = new Date(scheduleDay.date);
+                              const now = new Date();
+                              // Calculamos diferencia en días
+                              const diffTime = eventDate.getTime() - now.getTime();
+                              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                            // Si faltan más de 5 días (margen seguro de predicción), no mostrar predicción
-                            if (diffDays > 5) isFar = true;
+                              // Si faltan más de 5 días (margen seguro de predicción), no mostrar predicción
+                              if (diffDays > 5) isFar = true;
+                            }
                           }
-                        }
 
-                        if (isFar) {
-                          return (
-                            <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
-                              <Calendar size={10} />
-                              <span className="text-[9px] font-bold uppercase tracking-wider">Aún quedan días</span>
-                            </div>
-                          );
-                        }
-
-                        const dayCode = getDayCode(pDay);
-
-                        // Buscar el tiempo para ese día específico
-                        const weather = forecast.find(f =>
-                          f.dayName.toUpperCase() === dayCode ||
-                          f.dayName.toUpperCase().includes(dayCode)
-                        );
-
-                        const condition = weather?.condition?.toLowerCase() || '';
-
-                        const isRainy = weather && (
-                          condition.includes('lluvi') ||
-                          condition.includes('tormenta') ||
-                          condition.includes('chubasco') ||
-                          condition.includes('inest') ||
-                          condition.includes('riesgo')
-                        );
-
-                        if (isRainy) {
-                          return (
-                            <div className="flex items-center gap-1.5 bg-orange-500/90 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm animate-pulse border border-orange-400/50">
-                              <CloudRain size={10} />
-                              <span className="text-[9px] font-bold uppercase tracking-wider">Pendiente de Climatología</span>
-                            </div>
-                          );
-                        }
-
-                        if (weather) {
-                          if (condition.includes('consultando') || condition.length < 3) {
+                          if (isFar) {
                             return (
                               <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
-                                <CloudSun size={10} />
-                                <span className="text-[9px] font-bold uppercase tracking-wider">Sin datos oficiales</span>
+                                <Calendar size={10} />
+                                <span className="text-[9px] font-bold uppercase tracking-wider">Aún quedan días</span>
                               </div>
                             );
                           }
 
+                          const dayCode = getDayCode(pDay);
+
+                          // Buscar el tiempo para ese día específico
+                          const weather = forecast.find(f =>
+                            f.dayName.toUpperCase() === dayCode ||
+                            f.dayName.toUpperCase().includes(dayCode)
+                          );
+
+                          const condition = weather?.condition?.toLowerCase() || '';
+
+                          const isRainy = weather && (
+                            condition.includes('lluvi') ||
+                            condition.includes('tormenta') ||
+                            condition.includes('chubasco') ||
+                            condition.includes('inest') ||
+                            condition.includes('riesgo')
+                          );
+
+                          if (isRainy) {
+                            return (
+                              <div className="flex items-center gap-1.5 bg-orange-500/90 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm animate-pulse border border-orange-400/50">
+                                <CloudRain size={10} />
+                                <span className="text-[9px] font-bold uppercase tracking-wider">Pendiente de Climatología</span>
+                              </div>
+                            );
+                          }
+
+                          if (weather) {
+                            if (condition.includes('consultando') || condition.length < 3) {
+                              return (
+                                <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
+                                  <CloudSun size={10} />
+                                  <span className="text-[9px] font-bold uppercase tracking-wider">Sin datos oficiales</span>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="flex items-center gap-1.5 bg-green-600/80 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-green-500/50">
+                                <Check size={10} />
+                                <span className="text-[9px] font-bold uppercase tracking-wider">Climatología Favorable</span>
+                              </div>
+                            );
+                          }
+
+                          // Si no hay datos (día lejano), mostrar estado neutro
                           return (
-                            <div className="flex items-center gap-1.5 bg-green-600/80 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-green-500/50">
-                              <Check size={10} />
-                              <span className="text-[9px] font-bold uppercase tracking-wider">Climatología Favorable</span>
+                            <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
+                              <CloudSun size={10} />
+                              <span className="text-[9px] font-bold uppercase tracking-wider">Previsión no disponible</span>
                             </div>
                           );
-                        }
+                        })()}
+                      </div>
 
-                        // Si no hay datos (día lejano), mostrar estado neutro
-                        return (
-                          <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
-                            <CloudSun size={10} />
-                            <span className="text-[9px] font-bold uppercase tracking-wider">Previsión no disponible</span>
+                      <h2 className="text-xl font-cofrade font-medium text-white mb-1 leading-tight drop-shadow-md tracking-wide line-clamp-2">
+                        {nextPaso.brotherhood}
+                      </h2>
+                      <p className="text-sm text-gray-300 font-serif italic mb-5 line-clamp-1">{nextPaso.name}</p>
+
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                        <div className="bg-black/40 backdrop-blur-md p-2.5 rounded-xl border border-white/5 flex items-center gap-2.5">
+                          <Calendar size={16} className="text-goldCofrade/80" />
+                          <div>
+                            <p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider">Día</p>
+                            <p className="text-xs font-medium text-white">{getPasoDay(nextPaso)}</p>
                           </div>
-                        );
-                      })()}
-                    </div>
-
-                    <h2 className="text-xl font-cofrade font-medium text-white mb-1 leading-tight drop-shadow-md tracking-wide line-clamp-2">
-                      {nextPaso.brotherhood}
-                    </h2>
-                    <p className="text-sm text-gray-300 font-serif italic mb-5 line-clamp-1">{nextPaso.name}</p>
-
-                    <div className="grid grid-cols-2 gap-2 mb-4">
-                      <div className="bg-black/40 backdrop-blur-md p-2.5 rounded-xl border border-white/5 flex items-center gap-2.5">
-                        <Calendar size={16} className="text-goldCofrade/80" />
-                        <div>
-                          <p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider">Día</p>
-                          <p className="text-xs font-medium text-white">{getPasoDay(nextPaso)}</p>
+                        </div>
+                        <div className="bg-black/40 backdrop-blur-md p-2.5 rounded-xl border border-white/5 flex items-center gap-2.5">
+                          <Clock size={16} className="text-goldCofrade/80" />
+                          <div>
+                            <p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider">Salida</p>
+                            <p className="text-xs font-medium text-white">{nextPaso.startTime || b?.startTime || '--:--'}</p>
+                          </div>
                         </div>
                       </div>
-                      <div className="bg-black/40 backdrop-blur-md p-2.5 rounded-xl border border-white/5 flex items-center gap-2.5">
-                        <Clock size={16} className="text-goldCofrade/80" />
-                        <div>
-                          <p className="text-[8px] text-gray-400 uppercase font-bold tracking-wider">Salida</p>
-                          <p className="text-xs font-medium text-white">{nextPaso.startTime}</p>
-                        </div>
-                      </div>
-                    </div>
 
-                    <Link
-                      to={`/paso/${nextPaso.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="w-full block bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-[#300050] text-center py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all border border-white/10"
-                    >
-                      Ver Detalles
-                    </Link>
-                  </div>
-                ) : (
+                      <Link
+                        to={`/paso/${nextPaso.id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full block bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-[#300050] text-center py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all border border-white/10"
+                      >
+                        Ver Detalles
+                      </Link>
+                    </div>
+                  );
+                })() : (
                   <div className="text-center pb-6">
                     <div className="w-16 h-16 border border-[#D4AF37]/50 rounded-full flex items-center justify-center mx-auto mb-4 bg-black/20 backdrop-blur-sm">
                       <span className="font-cofrade text-2xl text-[#D4AF37]">AC</span>

@@ -349,7 +349,11 @@ const AppContent = () => {
       if (bandItems) setBands(bandItems);
 
       const { data: brotherhoodItems } = await supabase.from('hermandades').select('*');
-      if (brotherhoodItems) setBrotherhoods(brotherhoodItems);
+      if (brotherhoodItems) setBrotherhoods(brotherhoodItems.map(b => ({
+        ...b,
+        startTime: typeof b.start_time === 'string' ? b.start_time.substring(0, 5) : b.start_time,
+        arrivalTime: typeof b.arrival_time === 'string' ? b.arrival_time.substring(0, 5) : b.arrival_time
+      })));
 
       const { data: dayItems } = await supabase.from('days').select('*').order('order_index');
       if (dayItems) setDays(dayItems);
