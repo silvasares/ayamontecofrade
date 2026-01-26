@@ -336,7 +336,7 @@ const AppContent = () => {
         setActiveInAppAlerts(alertItems.filter(a => !readIds.includes(a.id)));
       }
 
-      const { data: steps } = await supabase.from('pasos').select('*').order('name', { ascending: true });
+      const { data: steps } = await supabase.from('pasos').select('*').order('order_index', { ascending: true });
       if (steps) setPasos(steps.map(s => ({ ...s, mainImage: s.main_image, foundationYear: s.foundation_year, startTime: s.start_time?.substring(0, 5), arrivalTime: s.arrival_time?.substring(0, 5) })));
 
       const { data: newsItems } = await supabase.from('news').select('*').order('published_at', { ascending: true });
@@ -348,7 +348,7 @@ const AppContent = () => {
       const { data: bandItems } = await supabase.from('bands').select('*');
       if (bandItems) setBands(bandItems);
 
-      const { data: brotherhoodItems } = await supabase.from('hermandades').select('*');
+      const { data: brotherhoodItems } = await supabase.from('hermandades').select('*').order('order_index', { ascending: true });
       if (brotherhoodItems) setBrotherhoods(brotherhoodItems.map(b => ({
         ...b,
         startTime: typeof b.start_time === 'string' ? b.start_time.substring(0, 5) : b.start_time,

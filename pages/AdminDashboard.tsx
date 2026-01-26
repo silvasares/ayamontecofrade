@@ -277,7 +277,7 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
 
   const fetch = async () => {
     setLoading(true);
-    const { data: b } = await supabase.from('hermandades').select('*').order('name');
+    const { data: b } = await supabase.from('hermandades').select('*').order('order_index', { ascending: true });
     if (b) setData(b);
     setLoading(false);
   };
@@ -308,7 +308,8 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
       main_image: editing.main_image || '',
       image: editing.image || '',
       route: Array.isArray(editing.route) ? editing.route : [],
-      route_coords: editing.route_coords || []
+      route_coords: editing.route_coords || [],
+      order_index: parseInt(editing.order_index) || 0
     };
 
     console.log("Saving Brotherhood payload:", payload);
@@ -330,7 +331,7 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
     <div className="space-y-6">
       <div className={`${SECTION_CARD} flex justify-between items-center`}>
         <div className="flex items-center gap-4"><ShieldCheck className="text-goldCofrade" /><h3 className="font-cofrade text-2xl">Hermandades</h3></div>
-        <button onClick={() => { setErrorInfo(null); setEditing({ name: '', day: defaultDay, route: [] }); }} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Nueva</button>
+        <button onClick={() => { setErrorInfo(null); setEditing({ name: '', day: defaultDay, route: [], order_index: data.length }); }} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Nueva</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -338,7 +339,7 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
           <div key={b.id} className="bg-white dark:bg-[#111] p-5 rounded-[32px] border flex justify-between items-center shadow-sm">
             <div className="flex items-center gap-4 min-w-0">
               <img src={b.crest || 'https://via.placeholder.com/50'} className="w-10 h-10 object-contain" />
-              <div className="min-w-0"><h4 className="font-bold text-sm truncate">{b.name}</h4><p className="text-[9px] text-goldCofrade font-black uppercase">{b.day}</p></div>
+              <div className="min-w-0"><h4 className="font-bold text-sm truncate">{b.name}</h4><div className="flex gap-2 text-[9px] font-black uppercase"><span className="text-goldCofrade">{b.day}</span><span className="text-purple-400">• Orden: {b.order_index || 0}</span></div></div>
             </div>
             <div className="flex gap-1"><button onClick={() => { setErrorInfo(null); setEditing(b); }} className="p-2 text-gray-300 hover:text-goldCofrade"><Edit size={18} /></button><DeleteButton onDelete={async () => { await supabase.from('hermandades').delete().eq('id', b.id); fetch(); }} /></div>
           </div>
@@ -356,6 +357,7 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div><label className={LABEL_STYLE}>Nombre</label><input required className={INPUT_STYLE} value={editing.name || ''} onChange={e => setEditing({ ...editing, name: e.target.value })} /></div>
+              <div><label className={LABEL_STYLE}>Orden (Posición)</label><input type="number" className={INPUT_STYLE} value={editing.order_index} onChange={e => setEditing({ ...editing, order_index: e.target.value })} placeholder="0, 1, 2..." /></div>
               <div><label className={LABEL_STYLE}>Día</label>
                 <select className={INPUT_STYLE} value={editing.day} onChange={e => setEditing({ ...editing, day: e.target.value })}>
                   {days.length > 0 ? (
@@ -435,7 +437,7 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
   const [errorInfo, setErrorInfo] = useState<string | null>(null);
 
   const fetch = async () => {
-    const { data: p } = await supabase.from('pasos').select('*').order('name');
+    const { data: p } = await supabase.from('pasos').select('*').order('order_index', { ascending: true });
     const { data: b } = await supabase.from('hermandades').select('id, name');
     const { data: bandData } = await supabase.from('bands').select('id, name');
 
@@ -469,7 +471,8 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
         foreman: editing.technical_data?.foreman || '',
         costaleros: editing.technical_data?.costaleros || '',
         author: editing.technical_data?.author || '',
-      }
+      },
+      order_index: parseInt(editing.order_index) || 0
     };
 
     try {
@@ -488,8 +491,8 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
 
   return (
     <div className="space-y-6">
-      <div className={`${SECTION_CARD} flex justify-between items-center`}><h3 className="font-cofrade text-2xl flex items-center gap-4"><Layers className="text-purple-500" />Titulares</h3><button onClick={() => setEditing({ name: '', day: Day.DOMINGO_RAMOS, technical_data: {} })} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Nuevo</button></div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{pasos.map(p => (<div key={p.id} className="bg-white dark:bg-[#111] p-4 rounded-3xl border flex justify-between items-center"><div><h4 className="font-bold">{p.name}</h4><p className="text-[9px] uppercase font-black text-purple-400">{p.day}</p></div><div className="flex gap-1"><button onClick={() => setEditing(p)} className="p-2 text-gray-300 hover:text-purple-500"><Edit size={18} /></button><DeleteButton onDelete={async () => { await supabase.from('pasos').delete().eq('id', p.id); fetch(); }} /></div></div>))}</div>
+      <div className={`${SECTION_CARD} flex justify-between items-center`}><h3 className="font-cofrade text-2xl flex items-center gap-4"><Layers className="text-purple-500" />Titulares</h3><button onClick={() => setEditing({ name: '', day: Day.DOMINGO_RAMOS, technical_data: {}, order_index: pasos.length })} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Nuevo</button></div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{pasos.map(p => (<div key={p.id} className="bg-white dark:bg-[#111] p-4 rounded-3xl border flex justify-between items-center"><div><h4 className="font-bold">{p.name}</h4><div className="flex gap-2 text-[9px] uppercase font-black text-purple-400"><span>{p.day}</span><span className="text-goldCofrade">• Orden: {p.order_index || 0}</span></div></div><div className="flex gap-1"><button onClick={() => setEditing(p)} className="p-2 text-gray-300 hover:text-purple-500"><Edit size={18} /></button><DeleteButton onDelete={async () => { await supabase.from('pasos').delete().eq('id', p.id); fetch(); }} /></div></div>))}</div>
 
       {editing && (
         <div className={MODAL_OVERLAY}><div className={MODAL_CONTENT}>
@@ -503,6 +506,7 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div><label className={LABEL_STYLE}>Nombre</label><input required className={INPUT_STYLE} value={editing.name || ''} onChange={e => setEditing({ ...editing, name: e.target.value })} /></div>
+              <div><label className={LABEL_STYLE}>Orden (Posición)</label><input type="number" className={INPUT_STYLE} value={editing.order_index} onChange={e => setEditing({ ...editing, order_index: e.target.value })} placeholder="0, 1, 2..." /></div>
               <div><label className={LABEL_STYLE}>Hermandad</label>
                 <select className={INPUT_STYLE} value={editing.brotherhood_id || ''} onChange={e => setEditing({ ...editing, brotherhood_id: e.target.value })}>
                   <option value="">Seleccionar Hermandad</option>{brotherhoods.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}

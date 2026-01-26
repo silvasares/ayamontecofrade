@@ -39,6 +39,7 @@ export interface Brotherhood {
   tribuna_time?: string;
   route?: string[];
   route_coords?: [number, number][];
+  order_index?: number;
 }
 
 export interface Paso {
@@ -76,6 +77,7 @@ export interface Paso {
   route: string[];
   route_coords?: [number, number][];
   eventDate?: string;
+  order_index?: number;
 }
 
 export interface Temple {
