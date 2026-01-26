@@ -1,14 +1,14 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (import.meta.env as any).GEMINI_API_KEY;
 let genAI: any = null;
 
-if (apiKey && apiKey !== "undefined") {
+if (apiKey && apiKey !== "undefined" && apiKey.trim() !== "") {
   try {
     genAI = new GoogleGenerativeAI(apiKey);
   } catch (e) {
-    console.error("Error al instanciar Gemini:", e);
+    console.error("Gemini Setup Error:", e);
   }
 }
 
@@ -34,13 +34,22 @@ export const askCofradeAssistant = async (query: string): Promise<AssistantRespo
 
     const result = await model.generateContent(query);
     const response = await result.response;
-    const text = response.text();
+    return { text: response.text(), sources: [] };
+  } catch (error: any) {
+    console.error("Gemini Error:", error);
 
-    return { text, sources: [] };
-  } catch (error) {
-    console.error("Gemini API Error:", error);
+    // Fallback sistemático si el modelo 2.5 falla o no es reconocido en esta región/entorno
+    try {
+      const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await fallbackModel.generateContent(query);
+      const response = await result.response;
+      return { text: response.text(), sources: [] };
+    } catch (e2) {
+      console.error("Double failure:", e2);
+    }
+
     return {
-      text: "La conexión con el archivo de la Agrupación de Cofradías ha fallado. Inténtalo de nuevo, hermano.",
+      text: "La conexión con el archivo de la Agrupación de Cofradías ha fallado. Revisa tu conexión a internet o la configuración de la clave API.",
       sources: []
     };
   }

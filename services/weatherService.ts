@@ -1,10 +1,8 @@
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { WeatherData } from '../types';
 
-// Cambiamos la clave de caché para FORZAR a todos los navegadores a borrar los datos viejos
-const CACHE_KEY = 'ac_weather_cache_v5_final';
-const CACHE_EXPIRY = 30 * 60 * 1000; // Reducimos a 30 min para mayor frescura
+const CACHE_KEY = 'ac_weather_cache_v7';
+const CACHE_EXPIRY = 60 * 60 * 1000;
 
 export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
   let cached = null;
@@ -19,22 +17,20 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
     } catch (e) { }
   }
 
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (import.meta.env as any).GEMINI_API_KEY;
   if (!apiKey || apiKey === "undefined") return getFallbackWeather();
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI(apiKey.trim());
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash",
-      tools: [{ googleSearch: {} }] as any
+      model: "gemini-2.5-flash"
     });
 
-    const prompt = `Consulta AEMET.es para Ayamonte (Huelva) HOY y próximos 4 días.
-    DEVUELVE SÓLO UN JSON ARRAY COMO ESTE:
-    [{"dayName": "HOY", "temp": 14, "condition": "Lluvia", "icon": "🌧️"}, ...]
-    
-    REGLA CRÍTICA: La temperatura debe ser SOLO el número de grados Celsius (ejemplo: 14). 
-    JAMÁS pongas la probabilidad de lluvia junto al número. Si el número es mayor de 40, está MAL.`;
+    const prompt = `Actúa como un experto meteorólogo para Ayamonte, Huelva.
+    Consulta el tiempo para HOY y los próximos 4 días.
+    DEVUELVE ÚNICAMENTE UN ARRAY JSON con este formato exacto:
+    [{"dayName": "HOY", "temp": 14, "condition": "Soleado", "icon": "☀️"}, ...]
+    Asegúrate de que 'temp' sea un número.`;
 
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -45,44 +41,27 @@ export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
     if (jsonMatch) {
       let data = JSON.parse(jsonMatch[0]);
       if (Array.isArray(data)) {
-        const finalData = data.slice(0, 5).map(item => {
-          let t = 15; // Valor por defecto sensato
-
-          // Extraemos el número real por si la IA se equivoca
-          const rawTemp = item.temp.toString();
-          const match = rawTemp.match(/\d+/);
-          if (match) {
-            t = parseInt(match[0]);
-          }
-
-          // Si el número es > 40 (imposible ahora), cogemos solo los dos últimos dígitos
-          // Ejemplo: 715 (70% lluvia, 15 grados) -> se queda con 15
-          if (t > 40) {
-            t = parseInt(t.toString().slice(-2));
-          }
-
-          // Último filtro de seguridad cofrade
-          if (t < 0 || t > 35) t = 14;
-
-          return {
-            ...item,
-            temp: t,
-          };
-        });
-
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({
-            timestamp: Date.now(),
-            data: finalData
-          }));
-        } catch (e) { }
-
-        return finalData;
+        localStorage.setItem(CACHE_KEY, JSON.stringify({
+          timestamp: Date.now(),
+          data
+        }));
+        return data.slice(0, 5);
       }
     }
     return getFallbackWeather();
   } catch (error) {
-    console.error("Gemini Weather Error:", error);
+    console.error("Weather Error:", error);
+
+    // Intento con 1.5 si el 2.5 falla
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey.trim());
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const result = await model.generateContent("Weather for Ayamonte, Huelva in JSON format");
+      const response = await result.response;
+      const jsonMatch = response.text().match(/\[\s*\{[\s\S]*\}\s*\]/);
+      if (jsonMatch) return JSON.parse(jsonMatch[0]);
+    } catch (e2) { }
+
     return getFallbackWeather();
   }
 };
@@ -96,8 +75,8 @@ const getFallbackWeather = (): WeatherData[] => {
     futureDate.setDate(now.getDate() + i);
     forecast.push({
       dayName: i === 0 ? 'HOY' : days[futureDate.getDay()],
-      temp: 14,
-      condition: 'Consultando AEMET...',
+      temp: 15,
+      condition: 'Variable',
       icon: '🌦️'
     });
   }

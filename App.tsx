@@ -336,7 +336,7 @@ const AppContent = () => {
         setActiveInAppAlerts(alertItems.filter(a => !readIds.includes(a.id)));
       }
 
-      const { data: steps } = await supabase.from('pasos').select('*');
+      const { data: steps } = await supabase.from('pasos').select('*').order('created_at', { ascending: true });
       if (steps) setPasos(steps.map(s => ({ ...s, mainImage: s.main_image, foundationYear: s.foundation_year, startTime: s.start_time?.substring(0, 5), arrivalTime: s.arrival_time?.substring(0, 5) })));
 
       const { data: newsItems } = await supabase.from('news').select('*').order('published_at', { ascending: true });
