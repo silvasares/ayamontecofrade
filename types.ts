@@ -35,7 +35,9 @@ export interface Brotherhood {
   vestry_image?: string;
   premieres?: string;
   start_time?: string;
+  startTime?: string;
   arrival_time?: string;
+  arrivalTime?: string;
   tribuna_time?: string;
   route?: string[];
   route_coords?: [number, number][];

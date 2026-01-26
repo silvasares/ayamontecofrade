@@ -437,7 +437,7 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
                 const b = brotherhoods.find(br => br.id === paso.brotherhood_id || br.name === paso.brotherhood);
                 const displayImage = b?.main_image || paso.mainImage;
                 return (
-                  <Link to={`/paso/${paso.id}`} key={paso.id} className="min-w-[85vw] h-[380px] snap-center relative rounded-[28px] overflow-hidden group shadow-xl border border-white/50 dark:border-white/5 active:scale-98 transition-transform">
+                  <Link to={`/brotherhood/${encodeURIComponent(paso.brotherhood)}`} key={paso.id} className="min-w-[85vw] h-[380px] snap-center relative rounded-[28px] overflow-hidden group shadow-xl border border-white/50 dark:border-white/5 active:scale-98 transition-transform">
                     <img src={displayImage} className="w-full h-full object-cover transition-transform duration-[20s] group-hover:scale-110" alt={paso.name} />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#150025] via-transparent to-black/10 opacity-80" />
 
@@ -601,7 +601,7 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
                       </div>
 
                       <Link
-                        to={`/paso/${nextPaso.id}`}
+                        to={`/brotherhood/${encodeURIComponent(nextPaso.brotherhood)}`}
                         onClick={(e) => e.stopPropagation()}
                         className="w-full block bg-white/10 backdrop-blur-md hover:bg-white text-white hover:text-[#300050] text-center py-3 rounded-xl font-bold uppercase tracking-widest text-[10px] transition-all border border-white/10"
                       >

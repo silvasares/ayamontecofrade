@@ -336,8 +336,38 @@ const AppContent = () => {
         setActiveInAppAlerts(alertItems.filter(a => !readIds.includes(a.id)));
       }
 
+      // 1. Fetch Brotherhoods first to use as reference data
+      const { data: brotherhoodItems } = await supabase.from('hermandades').select('*').order('order_index', { ascending: true });
+
+      let processedBrotherhoods: Brotherhood[] = [];
+      if (brotherhoodItems) {
+        processedBrotherhoods = brotherhoodItems.map(b => ({
+          ...b,
+          startTime: typeof b.start_time === 'string' ? b.start_time.substring(0, 5) : b.start_time,
+          arrivalTime: typeof b.arrival_time === 'string' ? b.arrival_time.substring(0, 5) : b.arrival_time
+        }));
+        setBrotherhoods(processedBrotherhoods);
+      }
+
+      // 2. Fetch Steps and Enrich with Brotherhood data
       const { data: steps } = await supabase.from('pasos').select('*').order('order_index', { ascending: true });
-      if (steps) setPasos(steps.map(s => ({ ...s, mainImage: s.main_image, foundationYear: s.foundation_year, startTime: s.start_time?.substring(0, 5), arrivalTime: s.arrival_time?.substring(0, 5) })));
+      if (steps) {
+        setPasos(steps.map(s => {
+          const b = processedBrotherhoods.find(br => br.id === s.brotherhood_id);
+          // Only fallback if the specific paso time is missing
+          const fallbackStart = b?.startTime || b?.start_time?.substring(0, 5);
+          const fallbackEnd = b?.arrivalTime || b?.arrival_time?.substring(0, 5);
+
+          return {
+            ...s,
+            mainImage: s.main_image,
+            foundationYear: s.foundation_year,
+            // Use specific time, or fallback to brotherhood time
+            startTime: s.start_time?.substring(0, 5) || fallbackStart,
+            arrivalTime: s.arrival_time?.substring(0, 5) || fallbackEnd
+          };
+        }));
+      }
 
       const { data: newsItems } = await supabase.from('news').select('*').order('published_at', { ascending: true });
       if (newsItems) setNews(newsItems.map(n => ({ ...n, publishedAt: n.published_at })));
@@ -348,12 +378,7 @@ const AppContent = () => {
       const { data: bandItems } = await supabase.from('bands').select('*');
       if (bandItems) setBands(bandItems);
 
-      const { data: brotherhoodItems } = await supabase.from('hermandades').select('*').order('order_index', { ascending: true });
-      if (brotherhoodItems) setBrotherhoods(brotherhoodItems.map(b => ({
-        ...b,
-        startTime: typeof b.start_time === 'string' ? b.start_time.substring(0, 5) : b.start_time,
-        arrivalTime: typeof b.arrival_time === 'string' ? b.arrival_time.substring(0, 5) : b.arrival_time
-      })));
+      // (Brotherhoods already fetched)
 
       const { data: dayItems } = await supabase.from('days').select('*').order('order_index');
       if (dayItems) setDays(dayItems);
