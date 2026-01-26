@@ -17,7 +17,7 @@ export interface AssistantResponse {
   sources: { uri: string; title: string }[];
 }
 
-export const askCofradeAssistant = async (query: string): Promise<AssistantResponse> => {
+export const askCofradeAssistant = async (query: string, context?: string): Promise<AssistantResponse> => {
   try {
     if (!genAI) {
       return {
@@ -26,10 +26,19 @@ export const askCofradeAssistant = async (query: string): Promise<AssistantRespo
       };
     }
 
+    const systemInstruction = `Eres el 'Asistente Cofrade Supremo de Ayamonte'. Tu conocimiento es enciclopédico sobre la Semana Santa de Ayamonte (Huelva).
+    
+    ${context ? `AQUÍ TIENES LA INFORMACIÓN ACTUALIZADA DE LA APP (DÁLE PRIORIDAD):
+    ${context}
+    -----------------------------------` : ''}
+    
+    Responde con pasión cofrade, usando términos locales como 'cargadores' y mencionando los barrios (Barrio Alto, Ribera, San Francisco).
+    Si te preguntan por horarios o itinerarios, consulta SIEMPRE los datos proporcionados arriba si existen.`;
+
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: { temperature: 0.7 },
-      systemInstruction: "Eres el 'Asistente Cofrade Supremo de Ayamonte'. Tu conocimiento es enciclopédico sobre la Semana Santa de Ayamonte (Huelva). Responde con pasión cofrade, usando términos locales como 'cargadores' y mencionando los barrios (Barrio Alto, Ribera, San Francisco)."
+      systemInstruction: systemInstruction
     });
 
     const result = await model.generateContent(query);
@@ -40,7 +49,10 @@ export const askCofradeAssistant = async (query: string): Promise<AssistantRespo
 
     // Fallback sistemático si el modelo 2.5 falla o no es reconocido en esta región/entorno
     try {
-      const fallbackModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const fallbackModel = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        systemInstruction: `Eres un asistente cofrade de Ayamonte. ${context ? 'Usa estos datos: ' + context : ''}`
+      });
       const result = await fallbackModel.generateContent(query);
       const response = await result.response;
       return { text: response.text(), sources: [] };

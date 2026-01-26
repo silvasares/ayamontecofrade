@@ -336,7 +336,7 @@ const AppContent = () => {
         setActiveInAppAlerts(alertItems.filter(a => !readIds.includes(a.id)));
       }
 
-      const { data: steps } = await supabase.from('pasos').select('*').order('created_at', { ascending: true });
+      const { data: steps } = await supabase.from('pasos').select('*').order('name', { ascending: true });
       if (steps) setPasos(steps.map(s => ({ ...s, mainImage: s.main_image, foundationYear: s.foundation_year, startTime: s.start_time?.substring(0, 5), arrivalTime: s.arrival_time?.substring(0, 5) })));
 
       const { data: newsItems } = await supabase.from('news').select('*').order('published_at', { ascending: true });
@@ -394,7 +394,7 @@ const AppContent = () => {
           <Route path="/news" element={<NewsPage news={news} />} />
           <Route path="/patrimony" element={<PatrimonyPage temples={temples} posters={posters} />} />
           <Route path="/map/:id" element={<MapPage pasos={pasos} brotherhoods={brotherhoods} />} />
-          <Route path="/assistant" element={<AIAssistant />} />
+          <Route path="/assistant" element={<AIAssistant brotherhoods={brotherhoods} pasos={pasos} days={days} />} />
           <Route path="/admin/*" element={<AdminDashboard updatePasos={fetchData} updateNews={fetchData} temples={temples} updateTemples={fetchData} updateBands={fetchData} updateDays={fetchData} days={days} />} />
         </Routes>
       </main>

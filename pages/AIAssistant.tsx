@@ -10,12 +10,20 @@ interface Message {
   sources?: { uri: string; title: string }[];
 }
 
-const AIAssistant: React.FC = () => {
+import { Brotherhood, Paso, DaySchedule } from '../types';
+
+interface Props {
+  brotherhoods?: Brotherhood[];
+  pasos?: Paso[];
+  days?: DaySchedule[];
+}
+
+const AIAssistant: React.FC<Props> = ({ brotherhoods = [], pasos = [], days = [] }) => {
   const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([
-    { 
-      role: 'assistant', 
-      content: '¡Paz y Bien! Soy tu guía de la Semana Santa de Ayamonte. Puedo contarte desde la historia de las imágenes del siglo XVI hasta los cambios de itinerario de este año. ¿Qué inquietud cofrade tienes?' 
+    {
+      role: 'assistant',
+      content: '¡Paz y Bien! Soy tu guía de la Semana Santa de Ayamonte. Puedo contarte desde la historia de las imágenes del siglo XVI hasta los cambios de itinerario de este año. ¿Qué inquietud cofrade tienes?'
     }
   ]);
   const [input, setInput] = useState('');
@@ -39,6 +47,43 @@ const AIAssistant: React.FC = () => {
     }
   }, [location.state]);
 
+  const generateContext = () => {
+    try {
+      let context = "DATOS ACTUALIZADOS DE LA SEMANA SANTA DE AYAMONTE:\n\n";
+
+      // Add days schedule
+      if (days.length > 0) {
+        context += "ORDEN DE DÍAS:\n";
+        days.forEach(d => context += `- ${d.name} (Orden: ${d.order_index}) ${d.date ? '[' + d.date + ']' : ''}\n`);
+        context += "\n";
+      }
+
+      // Add brotherhoods info
+      if (brotherhoods.length > 0) {
+        context += "HERMANDADES Y HORARIOS:\n";
+        brotherhoods.forEach(b => {
+          context += `\n### ${b.name} (${b.day})\n`;
+          context += `- Horario: Salida ${b.startTime || '?'} - Recogida ${b.arrivalTime || '?'}\n`;
+          context += `- Templo: ${b.temple_id || 'No especificado'}\n`;
+          if (b.history) context += `- Historia breve: ${b.history.substring(0, 100)}...\n`;
+
+          // Find pasos associated
+          const brotherPasos = pasos.filter(p => p.brotherhood_id === b.id || p.brotherhood === b.name);
+          if (brotherPasos.length > 0) {
+            context += `- Pasos:\n`;
+            brotherPasos.forEach(p => {
+              context += `  * ${p.name}: Capataz ${p.technical_data?.foreman || 'N/A'}, Costaleros ${p.technical_data?.costaleros || 'N/A'}.\n`;
+            });
+          }
+        });
+      }
+      return context;
+    } catch (e) {
+      console.error("Error building context", e);
+      return "";
+    }
+  };
+
   const handleSubmit = async (e?: React.FormEvent, presetQuery?: string) => {
     if (e) e.preventDefault();
     const query = presetQuery || input;
@@ -49,11 +94,12 @@ const AIAssistant: React.FC = () => {
     setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
     setLoading(true);
 
-    const result = await askCofradeAssistant(userMsg);
-    setMessages(prev => [...prev, { 
-      role: 'assistant', 
+    const context = generateContext();
+    const result = await askCofradeAssistant(userMsg, context);
+    setMessages(prev => [...prev, {
+      role: 'assistant',
       content: result.text,
-      sources: result.sources 
+      sources: result.sources
     }]);
     setLoading(false);
   };
@@ -89,13 +135,12 @@ const AIAssistant: React.FC = () => {
         <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 space-y-6 scroll-smooth bg-gray-50/30 dark:bg-black/20 no-scrollbar">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2`}>
-              <div className={`max-w-[85%] rounded-[32px] p-5 shadow-sm ${
-                msg.role === 'user' 
-                  ? 'bg-[#4B0082] text-white rounded-tr-none' 
+              <div className={`max-w-[85%] rounded-[32px] p-5 shadow-sm ${msg.role === 'user'
+                  ? 'bg-[#4B0082] text-white rounded-tr-none'
                   : 'bg-white dark:bg-[#262626] text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-gray-800 rounded-tl-none'
-              }`}>
+                }`}>
                 <p className="text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
-                
+
                 {/* Sources Display for Assistant */}
                 {msg.role === 'assistant' && msg.sources && msg.sources.length > 0 && (
                   <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
@@ -104,10 +149,10 @@ const AIAssistant: React.FC = () => {
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {msg.sources.map((source, idx) => (
-                        <a 
-                          key={idx} 
-                          href={source.uri} 
-                          target="_blank" 
+                        <a
+                          key={idx}
+                          href={source.uri}
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 px-2 py-1 bg-gray-50 dark:bg-black rounded-md text-[9px] font-bold text-[#4B0082] dark:text-[#D4AF37] hover:bg-purple-50 dark:hover:bg-purple-900/30 transition-all border border-gray-100 dark:border-gray-800"
                         >
@@ -135,7 +180,7 @@ const AIAssistant: React.FC = () => {
         {messages.length < 3 && (
           <div className="px-6 py-4 flex gap-2 overflow-x-auto no-scrollbar border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1A1A1A]">
             {suggestions.map((s, idx) => (
-              <button 
+              <button
                 key={idx}
                 onClick={() => handleSubmit(undefined, s.text)}
                 className="whitespace-nowrap flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/10 text-[#4B0082] dark:text-[#D4AF37] text-[10px] font-black uppercase tracking-widest rounded-full hover:bg-[#4B0082] hover:text-white transition-all border border-purple-100 dark:border-purple-900/20 active:scale-95 shadow-sm"
@@ -148,15 +193,15 @@ const AIAssistant: React.FC = () => {
 
         {/* Input */}
         <form onSubmit={handleSubmit} className="p-4 bg-white dark:bg-[#1A1A1A] border-t border-gray-100 dark:border-gray-800 flex gap-4">
-          <input 
-            type="text" 
+          <input
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Pregunta sobre procesiones, historia..."
             className="flex-grow bg-gray-100 dark:bg-black border-none rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4AF37] dark:text-white transition-all placeholder:text-gray-400"
           />
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={!input.trim() || loading}
             className="bg-[#4B0082] text-white p-4 rounded-2xl hover:bg-[#3a0066] disabled:opacity-50 transition-all shadow-xl active:scale-90"
           >
