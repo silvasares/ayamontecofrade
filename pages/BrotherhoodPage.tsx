@@ -15,6 +15,95 @@ interface Props {
     brotherhoods: Brotherhood[];
 }
 
+// Map Viewer Component (Moved outside to avoid re-creation on every render)
+const RouteViewer = ({ coords, pois }: { coords: [number, number][], pois?: any[] }) => {
+    const mapContainerRef = React.useRef<HTMLDivElement>(null);
+    const mapInstanceRef = React.useRef<any>(null);
+
+    useEffect(() => {
+        if (!mapContainerRef.current || !coords || coords.length === 0 || typeof (window as any).L === 'undefined') return;
+        const L = (window as any).L;
+
+        if (!mapInstanceRef.current) {
+            mapInstanceRef.current = L.map(mapContainerRef.current, {
+                zoomControl: false,
+                attributionControl: false,
+                scrollWheelZoom: false
+            });
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+            }).addTo(mapInstanceRef.current);
+        }
+
+        const map = mapInstanceRef.current;
+
+        // Limpiar capas previas
+        map.eachLayer((layer: any) => {
+            if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+                map.removeLayer(layer);
+            }
+        });
+
+        // Add Markers
+        coords.forEach((coord, idx) => {
+            const isStart = idx === 0;
+            const isEnd = idx === coords.length - 1;
+            let bgColor = '#7C3AED';
+            if (isStart) bgColor = '#D4AF37';
+            if (isEnd) bgColor = '#EF4444';
+
+            L.marker(coord, {
+                icon: L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `
+                        <div style="background-color: ${bgColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 8px; font-family: sans-serif;">${idx + 1}</div>
+                    `,
+                    iconSize: [20, 20],
+                    iconAnchor: [10, 10]
+                })
+            }).addTo(map);
+        });
+
+        // Add POIs
+        if (pois && pois.length > 0) {
+            pois.forEach((poi: any) => {
+                if (!poi.coords || poi.coords.length < 2) return;
+                L.marker(poi.coords, {
+                    icon: L.divIcon({
+                        className: 'poi-icon',
+                        html: `
+                            <div style="background-color: #3B82F6; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(59,130,246,0.5); display: flex; align-items: center; justify-content: center;"><div style="width: 4px; height: 4px; background-color: white; border-radius: 50%;"></div></div>
+                        `,
+                        iconSize: [12, 12],
+                        iconAnchor: [6, 6]
+                    })
+                }).bindPopup(`<div style="padding: 4px;"><p style="font-family: sans-serif; font-size: 10px; font-weight: 800; margin: 0; color: #3B82F6; text-transform: uppercase;">Punto de Interés</p><p style="font-family: sans-serif; font-size: 13px; font-weight: 700; margin: 4px 0 0 0; color: #111;">${poi.name}</p></div>`).addTo(map);
+            });
+        }
+
+        // Draw Polyline
+        const polyline = L.polyline(coords, {
+            color: '#4B0082',
+            weight: 4,
+            opacity: 0.6,
+            dashArray: '5, 10',
+            lineJoin: 'round'
+        }).addTo(map);
+
+        // Fit bounds
+        try {
+            if (coords.length > 0) {
+                map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+                setTimeout(() => map.invalidateSize(), 500);
+            }
+        } catch (err) { console.error(err); }
+
+    }, [coords, pois]);
+
+    return <div ref={mapContainerRef} className="w-full h-full force-light-map" />;
+};
+
 const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods }) => {
     const { name } = useParams<{ name: string }>();
     const navigate = useNavigate();
@@ -61,8 +150,6 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
         fetchBrotherhood();
     }, [decodedName, foundBrotherhood]);
 
-
-
     if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-goldCofrade" size={40} /></div>;
 
     // Fallback to step info if brotherhood record is still missing
@@ -84,123 +171,8 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
         return brotherhoodSteps[0]?.route_coords || [];
     }, [mainInfo.route_coords, brotherhoodSteps]);
 
-    // Map Viewer Component (Inline for simplicity and access to local state)
-    const RouteViewer = () => {
-        const mapContainerRef = React.useRef<HTMLDivElement>(null);
-        const mapInstanceRef = React.useRef<any>(null);
-
-        useEffect(() => {
-            if (!mapContainerRef.current || !consolidatedRouteCoords || consolidatedRouteCoords.length === 0 || typeof (window as any).L === 'undefined') return;
-            const L = (window as any).L;
-
-            if (!mapInstanceRef.current) {
-                mapInstanceRef.current = L.map(mapContainerRef.current, {
-                    zoomControl: false,
-                    attributionControl: false
-                });
-
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                }).addTo(mapInstanceRef.current);
-            }
-
-            // Clear existing layers if any (though we re-mount component usually)
-            mapInstanceRef.current.eachLayer((layer: any) => {
-                if (layer instanceof L.Marker || layer instanceof L.Polyline) {
-                    mapInstanceRef.current.removeLayer(layer);
-                }
-            });
-
-            // Add Markers
-            consolidatedRouteCoords.forEach((coord, idx) => {
-                const isStart = idx === 0;
-                const isEnd = idx === consolidatedRouteCoords.length - 1;
-                let bgColor = '#7C3AED';
-                if (isStart) bgColor = '#D4AF37';
-                if (isEnd) bgColor = '#EF4444';
-
-                L.marker(coord, {
-                    icon: L.divIcon({
-                        className: 'custom-div-icon',
-                        html: `
-                            <div style="
-                                background-color: ${bgColor};
-                                width: 24px;
-                                height: 24px;
-                                border-radius: 50%;
-                                border: 3px solid white;
-                                box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                color: white;
-                                font-weight: bold;
-                                font-size: 10px;
-                                font-family: sans-serif;
-                            ">${idx + 1}</div>
-                        `,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 12]
-                    })
-                }).addTo(mapInstanceRef.current);
-            });
-
-            // Add POIs (Points of Interest)
-            if (mainInfo.pois && mainInfo.pois.length > 0) {
-                mainInfo.pois.forEach((poi: any) => {
-                    if (!poi.coords || poi.coords.length < 2) return;
-                    L.marker(poi.coords, {
-                        icon: L.divIcon({
-                            className: 'poi-icon',
-                            html: `
-                                <div style="
-                                    background-color: #3B82F6;
-                                    width: 14px;
-                                    height: 14px;
-                                    border-radius: 50%;
-                                    border: 3px solid white;
-                                    box-shadow: 0 0 10px rgba(59,130,246,0.5);
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                ">
-                                    <div style="width: 4px; height: 4px; background-color: white; border-radius: 50%;"></div>
-                                </div>
-                            `,
-                            iconSize: [14, 14],
-                            iconAnchor: [7, 7]
-                        })
-                    }).bindPopup(`
-                        <div style="padding: 4px;">
-                            <p style="font-family: sans-serif; font-size: 11px; font-weight: 800; margin: 0; color: #1E40AF; text-transform: uppercase; letter-spacing: 0.05em;">Punto de Interés</p>
-                            <p style="font-family: sans-serif; font-size: 13px; font-weight: 600; margin: 4px 0 0 0; color: #111827;">${poi.name}</p>
-                        </div>
-                    `)
-                        .addTo(mapInstanceRef.current);
-                });
-            }
-
-            // Draw Polyline
-            const polyline = L.polyline(consolidatedRouteCoords, {
-                color: '#4B0082',
-                weight: 5,
-                opacity: 0.8,
-                dashArray: '10, 10',
-                lineJoin: 'round'
-            }).addTo(mapInstanceRef.current);
-
-            // Fit bounds with padding
-            mapInstanceRef.current.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-
-        }, []);
-
-        return <div ref={mapContainerRef} className="w-full h-full force-light-map" />;
-    };
-
     return (
         <div className="bg-[#F9FAFB] dark:bg-[#050505] min-h-screen pb-24">
-
-
             {/* Hero Section */}
             <div className="relative w-full bg-[#4B0082] overflow-hidden rounded-b-[40px] shadow-lg min-h-[350px] flex flex-col items-center justify-center pt-20 pb-12 px-6">
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 z-0"></div>
@@ -295,10 +267,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                 </div>
                                 <ChevronRight size={20} className="text-goldCofrade" />
                             </button>
-
-
                         </div>
-
                     </div>
 
                     {/* Hábito y Estrenos */}
@@ -335,7 +304,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                         </div>
                     )}
 
-                    {/* Reseña Histórica Card - Moved here for prominence */}
+                    {/* Reseña Histórica Card */}
                     {mainInfo.history && (
                         <div className="bg-white dark:bg-[#1A1A1A] rounded-[32px] p-8 md:p-10 shadow-sm border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-2">
                             <h3 className="text-sm font-black text-[#4B0082] dark:text-goldCofrade uppercase tracking-widest flex items-center gap-2 mb-6 border-b pb-3">
@@ -357,7 +326,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                     </h3>
                                 </div>
                                 <div className="w-full h-[400px] relative">
-                                    <RouteViewer />
+                                    <RouteViewer coords={consolidatedRouteCoords} pois={mainInfo.pois} />
                                     <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center z-[10] pointer-events-none">
                                         <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl border border-goldCofrade/20 shadow-xl pointer-events-auto">
                                             <p className="text-[10px] font-black text-[#300050] dark:text-goldCofrade uppercase tracking-widest">Mapa Interactivo</p>
