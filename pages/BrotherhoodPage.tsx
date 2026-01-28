@@ -281,6 +281,30 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                 </div>
                                 <ChevronRight size={20} className="text-goldCofrade" />
                             </button>
+
+                            {(mainInfo.route_coords?.length > 0 || mainInfo.route?.length > 0) && (
+                                <button
+                                    onClick={() => {
+                                        if (mainInfo.route_coords?.length > 0) {
+                                            setShowMapModal(true);
+                                        } else {
+                                            navigate(`/map/${brotherhoodSteps[0]?.id || 'brotherhood'}`);
+                                        }
+                                    }}
+                                    className="bg-white dark:bg-[#1A1A1A] p-4 rounded-[24px] text-gray-900 dark:text-white flex items-center justify-between shadow-lg border border-goldCofrade/20 active:scale-95 transition-all"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-goldCofrade/10 p-3 rounded-2xl text-goldCofrade">
+                                            <MapIcon size={20} />
+                                        </div>
+                                        <div className="text-left">
+                                            <p className="text-[9px] font-black uppercase text-gray-400 tracking-[0.2em]">Interactivo</p>
+                                            <p className="text-sm font-bold">Ver Recorrido</p>
+                                        </div>
+                                    </div>
+                                    <ChevronRight size={20} className="text-goldCofrade" />
+                                </button>
+                            )}
                         </div>
 
                     </div>
@@ -338,7 +362,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                 <h3 className="text-sm font-black text-[#4B0082] dark:text-goldCofrade uppercase tracking-widest flex items-center gap-2 mb-6 border-b pb-3">
                                     <MapIcon size={16} /> Itinerario y Recorrido
                                 </h3>
-                                {mainInfo.route_coords?.length > 0 && (
+                                {(mainInfo.route_coords?.length > 0 || mainInfo.route?.length > 0) && (
                                     <Link
                                         to={`/map/${brotherhoodSteps[0]?.id || 'brotherhood'}`}
                                         className="block relative w-full h-40 rounded-2xl overflow-hidden mb-8 group"
