@@ -73,13 +73,24 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
     const temple = temples.find(t => t.id === mainInfo.temple_id);
     const crest = mainInfo.crest;
 
+    // Consolidate route data (Fallback individual fields if empty in brotherhood record)
+    const consolidatedRoute = useMemo(() => {
+        if (mainInfo.route && mainInfo.route.length > 0) return mainInfo.route;
+        return brotherhoodSteps[0]?.route || [];
+    }, [mainInfo.route, brotherhoodSteps]);
+
+    const consolidatedRouteCoords = useMemo(() => {
+        if (mainInfo.route_coords && mainInfo.route_coords.length > 0) return mainInfo.route_coords;
+        return brotherhoodSteps[0]?.route_coords || [];
+    }, [mainInfo.route_coords, brotherhoodSteps]);
+
     // Map Viewer Component (Inline for simplicity and access to local state)
     const RouteViewer = () => {
         const mapContainerRef = React.useRef<HTMLDivElement>(null);
         const mapInstanceRef = React.useRef<any>(null);
 
         useEffect(() => {
-            if (!mapContainerRef.current || !mainInfo.route_coords || mainInfo.route_coords.length === 0 || typeof (window as any).L === 'undefined') return;
+            if (!mapContainerRef.current || !consolidatedRouteCoords || consolidatedRouteCoords.length === 0 || typeof (window as any).L === 'undefined') return;
             const L = (window as any).L;
 
             if (!mapInstanceRef.current) {
@@ -101,9 +112,9 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
             });
 
             // Add Markers
-            mainInfo.route_coords.forEach((coord, idx) => {
+            consolidatedRouteCoords.forEach((coord, idx) => {
                 const isStart = idx === 0;
-                const isEnd = idx === mainInfo.route_coords!.length - 1;
+                const isEnd = idx === consolidatedRouteCoords.length - 1;
                 let bgColor = '#7C3AED';
                 if (isStart) bgColor = '#D4AF37';
                 if (isEnd) bgColor = '#EF4444';
@@ -135,7 +146,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
             });
 
             // Draw Polyline
-            const polyline = L.polyline(mainInfo.route_coords, {
+            const polyline = L.polyline(consolidatedRouteCoords, {
                 color: '#4B0082',
                 weight: 5,
                 opacity: 0.8,
@@ -154,7 +165,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
     return (
         <div className="bg-[#F9FAFB] dark:bg-[#050505] min-h-screen pb-24">
             {/* Modal de Mapa */}
-            {showMapModal && mainInfo.route_coords && (
+            {showMapModal && consolidatedRouteCoords.length > 0 && (
                 <div className="fixed inset-0 z-[100] bg-white dark:bg-[#050505] animate-in fade-in zoom-in duration-300 flex flex-col">
                     <div className="absolute top-4 right-4 z-[200]">
                         <button
@@ -263,7 +274,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                         <div className="grid grid-cols-1 gap-4 mb-8">
                             <button
                                 onClick={() => {
-                                    const destination = temple ? temple.address : mainInfo.route[0] || 'Ayamonte';
+                                    const destination = temple ? temple.address : consolidatedRoute[0] || 'Ayamonte';
                                     const encodedDest = encodeURIComponent(destination);
                                     const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedDest}&travelmode=walking`;
                                     window.open(mapsUrl, '_blank');
@@ -282,10 +293,10 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                 <ChevronRight size={20} className="text-goldCofrade" />
                             </button>
 
-                            {(mainInfo.route_coords?.length > 0 || mainInfo.route?.length > 0) && (
+                            {(consolidatedRouteCoords.length > 0 || consolidatedRoute.length > 0) && (
                                 <button
                                     onClick={() => {
-                                        if (mainInfo.route_coords?.length > 0) {
+                                        if (consolidatedRouteCoords.length > 0) {
                                             setShowMapModal(true);
                                         } else {
                                             navigate(`/map/${brotherhoodSteps[0]?.id || 'brotherhood'}`);
@@ -356,13 +367,13 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                     )}
 
                     {/* Itinerario / Mapa */}
-                    {(mainInfo.route?.length > 0 || mainInfo.route_coords?.length > 0) && (
+                    {(consolidatedRoute.length > 0 || consolidatedRouteCoords.length > 0) && (
                         <div className="bg-white dark:bg-[#1A1A1A] rounded-[32px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800">
                             <div className="p-8 pb-4">
                                 <h3 className="text-sm font-black text-[#4B0082] dark:text-goldCofrade uppercase tracking-widest flex items-center gap-2 mb-6 border-b pb-3">
                                     <MapIcon size={16} /> Itinerario y Recorrido
                                 </h3>
-                                {(mainInfo.route_coords?.length > 0 || mainInfo.route?.length > 0) && (
+                                {(consolidatedRouteCoords.length > 0 || consolidatedRoute.length > 0) && (
                                     <Link
                                         to={`/map/${brotherhoodSteps[0]?.id || 'brotherhood'}`}
                                         className="block relative w-full h-40 rounded-2xl overflow-hidden mb-8 group"
@@ -384,7 +395,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                     </Link>
                                 )}
                                 <div className="space-y-4 pl-4 border-l-2 border-goldCofrade/20 ml-2 py-2">
-                                    {mainInfo.route?.map((street: string, i: number) => (
+                                    {consolidatedRoute.map((street: string, i: number) => (
                                         <div key={i} className="flex items-center gap-4">
                                             <div className="w-2 h-2 rounded-full bg-goldCofrade/40 shrink-0"></div>
                                             <p className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-tight">{street}</p>
