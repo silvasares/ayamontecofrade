@@ -61,7 +61,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
         fetchBrotherhood();
     }, [decodedName, foundBrotherhood]);
 
-    const [showMapModal, setShowMapModal] = useState(false);
+
 
     if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-goldCofrade" size={40} /></div>;
 
@@ -145,6 +145,41 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                 }).addTo(mapInstanceRef.current);
             });
 
+            // Add POIs (Points of Interest)
+            if (mainInfo.pois && mainInfo.pois.length > 0) {
+                mainInfo.pois.forEach((poi: any) => {
+                    if (!poi.coords || poi.coords.length < 2) return;
+                    L.marker(poi.coords, {
+                        icon: L.divIcon({
+                            className: 'poi-icon',
+                            html: `
+                                <div style="
+                                    background-color: #3B82F6;
+                                    width: 14px;
+                                    height: 14px;
+                                    border-radius: 50%;
+                                    border: 3px solid white;
+                                    box-shadow: 0 0 10px rgba(59,130,246,0.5);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                ">
+                                    <div style="width: 4px; height: 4px; background-color: white; border-radius: 50%;"></div>
+                                </div>
+                            `,
+                            iconSize: [14, 14],
+                            iconAnchor: [7, 7]
+                        })
+                    }).bindPopup(`
+                        <div style="padding: 4px;">
+                            <p style="font-family: sans-serif; font-size: 11px; font-weight: 800; margin: 0; color: #1E40AF; text-transform: uppercase; letter-spacing: 0.05em;">Punto de Interés</p>
+                            <p style="font-family: sans-serif; font-size: 13px; font-weight: 600; margin: 4px 0 0 0; color: #111827;">${poi.name}</p>
+                        </div>
+                    `)
+                        .addTo(mapInstanceRef.current);
+                });
+            }
+
             // Draw Polyline
             const polyline = L.polyline(consolidatedRouteCoords, {
                 color: '#4B0082',
@@ -164,39 +199,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
 
     return (
         <div className="bg-[#F9FAFB] dark:bg-[#050505] min-h-screen pb-24">
-            {/* Modal de Mapa */}
-            {showMapModal && consolidatedRouteCoords.length > 0 && (
-                <div className="fixed inset-0 z-[100] bg-white dark:bg-[#050505] animate-in fade-in zoom-in duration-300 flex flex-col">
-                    <div className="absolute top-4 right-4 z-[200]">
-                        <button
-                            onClick={() => setShowMapModal(false)}
-                            className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-3 rounded-full text-gray-900 dark:text-white shadow-xl border border-gray-200 dark:border-gray-800"
-                        >
-                            <X size={24} />
-                        </button>
-                    </div>
 
-                    <div className="absolute top-6 left-6 z-[200] pointer-events-none">
-                        <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md px-5 py-3 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800">
-                            <p className="text-[10px] font-black uppercase text-goldCofrade tracking-widest mb-1">Recorrido Oficial</p>
-                            <h2 className="text-lg font-bold text-[#4B0082] dark:text-white leading-none">{mainInfo.name || decodedName}</h2>
-                        </div>
-                    </div>
-
-                    <div className="flex-grow w-full h-full relative">
-                        <RouteViewer />
-                        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[200] w-[90%] md:w-auto">
-                            <p className="text-[10px] text-gray-500 bg-white/90 dark:bg-black/90 backdrop-blur-md p-3 rounded-xl border border-gray-200 dark:border-gray-800 text-center shadow-lg">
-                                <span className="flex items-center justify-center gap-3">
-                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#D4AF37]"></span> Inicio</span>
-                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#7C3AED]"></span> Recorrido</span>
-                                    <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#EF4444]"></span> Fin/Recogida</span>
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             {/* Hero Section */}
             <div className="relative w-full bg-[#4B0082] overflow-hidden rounded-b-[40px] shadow-lg min-h-[350px] flex flex-col items-center justify-center pt-20 pb-12 px-6">
@@ -293,29 +296,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                 <ChevronRight size={20} className="text-goldCofrade" />
                             </button>
 
-                            {(consolidatedRouteCoords.length > 0 || consolidatedRoute.length > 0) && (
-                                <button
-                                    onClick={() => {
-                                        if (consolidatedRouteCoords.length > 0) {
-                                            setShowMapModal(true);
-                                        } else {
-                                            navigate(`/map/${brotherhoodSteps[0]?.id || 'brotherhood'}`);
-                                        }
-                                    }}
-                                    className="bg-white dark:bg-[#1A1A1A] p-4 rounded-[24px] text-gray-900 dark:text-white flex items-center justify-between shadow-lg border border-goldCofrade/20 active:scale-95 transition-all"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="bg-goldCofrade/10 p-3 rounded-2xl text-goldCofrade">
-                                            <MapIcon size={20} />
-                                        </div>
-                                        <div className="text-left">
-                                            <p className="text-[9px] font-black uppercase text-gray-400 tracking-[0.2em]">Interactivo</p>
-                                            <p className="text-sm font-bold">Ver Recorrido</p>
-                                        </div>
-                                    </div>
-                                    <ChevronRight size={20} className="text-goldCofrade" />
-                                </button>
-                            )}
+
                         </div>
 
                     </div>
@@ -369,38 +350,46 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                     {/* Itinerario / Mapa */}
                     {(consolidatedRoute.length > 0 || consolidatedRouteCoords.length > 0) && (
                         <div className="bg-white dark:bg-[#1A1A1A] rounded-[32px] overflow-hidden shadow-sm border border-gray-100 dark:border-gray-800">
-                            <div className="p-8 pb-4">
-                                <h3 className="text-sm font-black text-[#4B0082] dark:text-goldCofrade uppercase tracking-widest flex items-center gap-2 mb-6 border-b pb-3">
-                                    <MapIcon size={16} /> Itinerario y Recorrido
-                                </h3>
-                                {(consolidatedRouteCoords.length > 0 || consolidatedRoute.length > 0) && (
-                                    <Link
-                                        to={`/map/${brotherhoodSteps[0]?.id || 'brotherhood'}`}
-                                        className="block relative w-full h-40 rounded-2xl overflow-hidden mb-8 group"
-                                    >
-                                        <div className="absolute inset-0 bg-[url('https://maps.googleapis.com/maps/api/staticmap?center=37.2155,-7.4065&zoom=15&size=600x300&key=YOUR_KEY')] bg-cover bg-center">
-                                            {/* Fallback pattern if no static map key */}
-                                            <div className="absolute inset-0 bg-[#300050]/5 dark:bg-white/5 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                            <div className="p-0">
+                                <div className="p-8 pb-4">
+                                    <h3 className="text-sm font-black text-[#4B0082] dark:text-goldCofrade uppercase tracking-widest flex items-center gap-2 mb-2 border-b pb-3">
+                                        <MapIcon size={16} /> Itinerario y Recorrido
+                                    </h3>
+                                </div>
+                                <div className="w-full h-[400px] relative">
+                                    <RouteViewer />
+                                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center z-[10] pointer-events-none">
+                                        <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl border border-goldCofrade/20 shadow-xl pointer-events-auto">
+                                            <p className="text-[10px] font-black text-[#300050] dark:text-goldCofrade uppercase tracking-widest">Mapa Interactivo</p>
                                         </div>
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#300050]/80 to-transparent flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <MapIcon size={32} className="mb-2 text-goldCofrade" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Ver Mapa Interactivo</span>
+                                    </div>
+                                    <div className="absolute top-4 right-4 z-[10] pointer-events-none">
+                                        <div className="flex flex-col gap-2">
+                                            {mainInfo.pois && mainInfo.pois.length > 0 && (
+                                                <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-3 rounded-2xl border border-goldCofrade/20 shadow-xl pointer-events-auto max-w-[200px]">
+                                                    <p className="text-[9px] font-black uppercase text-goldCofrade mb-2 border-b pb-1">Puntos de Interés</p>
+                                                    <div className="space-y-1.5">
+                                                        {mainInfo.pois.map((poi: any, i: number) => (
+                                                            <div key={i} className="flex gap-2 items-start">
+                                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1 shrink-0"></div>
+                                                                <p className="text-[9px] font-bold text-gray-700 dark:text-gray-300 leading-tight">{poi.name}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                        <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center z-10">
-                                            <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl border border-goldCofrade/20 shadow-xl">
-                                                <p className="text-[10px] font-black text-[#300050] dark:text-goldCofrade uppercase tracking-widest">Recorrido Trazado</p>
+                                    </div>
+                                </div>
+                                <div className="p-8 pt-6">
+                                    <div className="space-y-4 pl-4 border-l-2 border-goldCofrade/20 ml-2 py-2">
+                                        {consolidatedRoute.map((street: string, i: number) => (
+                                            <div key={i} className="flex items-center gap-4">
+                                                <div className="w-2 h-2 rounded-full bg-goldCofrade/40 shrink-0"></div>
+                                                <p className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-tight">{street}</p>
                                             </div>
-                                            <div className="bg-goldCofrade text-[#300050] p-2 rounded-lg shadow-xl"><ChevronRight size={16} /></div>
-                                        </div>
-                                    </Link>
-                                )}
-                                <div className="space-y-4 pl-4 border-l-2 border-goldCofrade/20 ml-2 py-2">
-                                    {consolidatedRoute.map((street: string, i: number) => (
-                                        <div key={i} className="flex items-center gap-4">
-                                            <div className="w-2 h-2 rounded-full bg-goldCofrade/40 shrink-0"></div>
-                                            <p className="text-xs font-black text-gray-500 dark:text-gray-400 uppercase tracking-tight">{street}</p>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -41,6 +41,7 @@ export interface Brotherhood {
   tribuna_time?: string;
   route?: string[];
   route_coords?: [number, number][];
+  pois?: { name: string; coords: [number, number]; description?: string }[];
   order_index?: number;
 }
 

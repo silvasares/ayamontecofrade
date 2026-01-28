@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Trash2, Edit, LogOut, Church, Music, Loader2, ShieldCheck, Image,
+  Trash2, Edit, LogOut, Church, Music, Loader2, ShieldCheck, Image, MapPin,
   X, Save, AlertCircle, Layers, Newspaper, Shirt, Sparkles, Map as MapIcon, Info, Users, Flower, Database, Copy, Palette, Calendar, Mail, Settings, Type, Check
 } from 'lucide-react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
@@ -309,6 +309,7 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
       image: editing.image || '',
       route: Array.isArray(editing.route) ? editing.route : [],
       route_coords: editing.route_coords || [],
+      pois: Array.isArray(editing.pois) ? editing.pois : [],
       order_index: parseInt(editing.order_index) || 0
     };
 
@@ -402,6 +403,41 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
                 value={editing.route_coords || []}
                 onChange={(coords) => setEditing({ ...editing, route_coords: coords })}
               />
+            </div>
+
+            <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex justify-between items-center border-b pb-1">
+                <h4 className="text-[10px] font-black text-goldCofrade uppercase flex items-center gap-2"><MapPin size={12} /> Puntos de Interés (Marcadores Azules)</h4>
+                <button
+                  type="button"
+                  onClick={() => setEditing({ ...editing, pois: [...(editing.pois || []), { name: '', coords: [37.2155, -7.4065] }] })}
+                  className="text-[10px] font-bold text-purpleCofrade uppercase bg-white dark:bg-black px-3 py-1.5 rounded-lg shadow-sm"
+                >
+                  + Añadir Punto
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(editing.pois || []).map((poi: any, idx: number) => (
+                  <div key={idx} className="p-4 bg-gray-50 dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-gray-800 space-y-3 relative group">
+                    <button type="button" onClick={() => setEditing({ ...editing, pois: editing.pois.filter((_: any, i: number) => i !== idx) })} className="absolute top-2 right-2 text-gray-300 hover:text-red-500 transition-colors"><X size={14} /></button>
+                    <div>
+                      <label className={LABEL_STYLE}>Nombre del Punto</label>
+                      <input className={INPUT_STYLE} value={poi.name} onChange={e => { const np = [...editing.pois]; np[idx] = { ...np[idx], name: e.target.value }; setEditing({ ...editing, pois: np }); }} placeholder="Ej. Petalá, Encuentro..." />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className={LABEL_STYLE}>Latitud</label>
+                        <input type="number" step="any" className={INPUT_STYLE} value={poi.coords[0]} onChange={e => { const np = [...editing.pois]; const coords = [...np[idx].coords]; coords[0] = parseFloat(e.target.value); np[idx] = { ...np[idx], coords }; setEditing({ ...editing, pois: np }); }} />
+                      </div>
+                      <div>
+                        <label className={LABEL_STYLE}>Longitud</label>
+                        <input type="number" step="any" className={INPUT_STYLE} value={poi.coords[1]} onChange={e => { const np = [...editing.pois]; const coords = [...np[idx].coords]; coords[1] = parseFloat(e.target.value); np[idx] = { ...np[idx], coords }; setEditing({ ...editing, pois: np }); }} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {(editing.pois || []).length === 0 && <p className="text-[10px] text-gray-400 italic text-center py-2">No hay puntos de interés configurados</p>}
             </div>
 
             <div className="space-y-4">
