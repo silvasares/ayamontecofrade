@@ -150,26 +150,26 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
         fetchBrotherhood();
     }, [decodedName, foundBrotherhood]);
 
-    if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-goldCofrade" size={40} /></div>;
-
-    // Fallback to step info if brotherhood record is still missing
+    // Consolidate values before any conditional returns
     const mainInfo = brotherhood || (brotherhoodSteps[0] as any);
 
+    const consolidatedRoute = useMemo(() => {
+        if (!mainInfo?.route) return brotherhoodSteps[0]?.route || [];
+        if (mainInfo.route.length > 0) return mainInfo.route;
+        return brotherhoodSteps[0]?.route || [];
+    }, [mainInfo?.route, brotherhoodSteps]);
+
+    const consolidatedRouteCoords = useMemo(() => {
+        if (!mainInfo?.route_coords) return brotherhoodSteps[0]?.route_coords || [];
+        if (mainInfo.route_coords.length > 0) return mainInfo.route_coords;
+        return brotherhoodSteps[0]?.route_coords || [];
+    }, [mainInfo?.route_coords, brotherhoodSteps]);
+
+    if (loading) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-goldCofrade" size={40} /></div>;
     if (!mainInfo) return <div className="p-20 text-center">Hermandad no encontrada</div>;
 
     const temple = temples.find(t => t.id === mainInfo.temple_id);
     const crest = mainInfo.crest;
-
-    // Consolidate route data (Fallback individual fields if empty in brotherhood record)
-    const consolidatedRoute = useMemo(() => {
-        if (mainInfo.route && mainInfo.route.length > 0) return mainInfo.route;
-        return brotherhoodSteps[0]?.route || [];
-    }, [mainInfo.route, brotherhoodSteps]);
-
-    const consolidatedRouteCoords = useMemo(() => {
-        if (mainInfo.route_coords && mainInfo.route_coords.length > 0) return mainInfo.route_coords;
-        return brotherhoodSteps[0]?.route_coords || [];
-    }, [mainInfo.route_coords, brotherhoodSteps]);
 
     return (
         <div className="bg-[#F9FAFB] dark:bg-[#050505] min-h-screen pb-24">
