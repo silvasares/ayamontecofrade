@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Clock, ChevronRight, Shield, Calendar as CalendarIcon, Sparkles, MapPin } from 'lucide-react';
 import { Paso, Day, Brotherhood } from '../types';
@@ -51,15 +51,34 @@ const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
     }
   }, [daysList, location.search]);
 
-  // Filtrar hermandades del día seleccionado
-  const dailyBrotherhoodsNames = Array.from(new Set(
-    pasos.filter(p => {
-      if (!brotherhoods || brotherhoods.length === 0) return p.day === selectedDay;
-      const b = brotherhoods.find(br => br.name === p.brotherhood || br.id === p.brotherhood_id);
-      const realDay = b ? b.day : p.day;
-      return realDay === selectedDay;
-    }).map(p => p.brotherhood)
-  ));
+  // Filtrar hermandades del día seleccionado y ordenarlas
+  const dailyBrotherhoodsNames = useMemo(() => {
+    // 1. Obtener todas las hermandades únicas para este día
+    const bFromTable = (brotherhoods || []).filter(b => b.day === selectedDay);
+
+    // Si no hay hermandades registradas aún para este día, sacarlas de los pasos
+    if (bFromTable.length === 0) {
+      return Array.from(new Set(
+        pasos.filter(p => p.day === selectedDay).map(p => p.brotherhood)
+      ));
+    }
+
+    // 2. Ordenarlas por startTime y luego por order_index
+    const sorted = [...bFromTable].sort((a, b) => {
+      // Comparar por hora de salida (más fiable para el orden cronológico)
+      const timeA = a.startTime || a.start_time || '99:99';
+      const timeB = b.startTime || b.start_time || '99:99';
+
+      if (timeA !== timeB) {
+        return timeA.localeCompare(timeB);
+      }
+
+      // Si tienen la misma hora, usar el order_index
+      return (a.order_index || 0) - (b.order_index || 0);
+    });
+
+    return sorted.map(b => b.name);
+  }, [selectedDay, brotherhoods, pasos]);
 
   return (
     <div className="animate-in fade-in duration-700 bg-luxuryWhite dark:bg-[#0A0A0A] min-h-screen flex flex-col">
@@ -128,7 +147,7 @@ const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
                 >
                   <div className="p-6 md:p-10">
                     <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center text-center md:text-left">
-                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-[32px] md:rounded-[40px] bg-white dark:bg-black shadow-[0_30px_60px_-15px_rgba(48,0,80,0.15)] border border-goldCofrade/10 flex items-center justify-center p-6 shrink-0 group-hover:rotate-3 group-hover:scale-105 transition-all duration-700 relative overflow-hidden">
+                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-[32px] md:rounded-[40px] bg-white dark:bg-black shadow-[0_30px_60px_-15px_rgba(48,0,80,0.15)] border border-goldCofrade/10 flex items-center justify-center p-2 shrink-0 group-hover:rotate-3 group-hover:scale-105 transition-all duration-700 relative overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-goldCofrade/5 to-transparent"></div>
                         {crest ? (
                           <img src={crest} alt="Escudo" className="w-full h-full object-contain relative z-10" />

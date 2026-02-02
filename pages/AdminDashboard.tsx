@@ -383,9 +383,9 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
             <div className="space-y-4">
               <h4 className="text-[10px] font-black text-goldCofrade uppercase border-b pb-1">Horarios de Salida y Entrada</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><label className={LABEL_STYLE}>Salida</label><input type="time" className={INPUT_STYLE} value={editing.start_time || ''} onChange={e => setEditing({ ...editing, start_time: e.target.value })} /></div>
-                <div><label className={LABEL_STYLE}>Tribuna</label><input type="time" className={INPUT_STYLE} value={editing.tribuna_time || ''} onChange={e => setEditing({ ...editing, tribuna_time: e.target.value })} /></div>
-                <div><label className={LABEL_STYLE}>Entrada</label><input type="time" className={INPUT_STYLE} value={editing.arrival_time || ''} onChange={e => setEditing({ ...editing, arrival_time: e.target.value })} /></div>
+                <div><label className={LABEL_STYLE}>Salida (24h)</label><input type="time" className={INPUT_STYLE} value={editing.start_time || ''} onChange={e => setEditing({ ...editing, start_time: e.target.value })} /></div>
+                <div><label className={LABEL_STYLE}>Tribuna (24h)</label><input type="time" className={INPUT_STYLE} value={editing.tribuna_time || ''} onChange={e => setEditing({ ...editing, tribuna_time: e.target.value })} /></div>
+                <div><label className={LABEL_STYLE}>Entrada (24h)</label><input type="time" className={INPUT_STYLE} value={editing.arrival_time || ''} onChange={e => setEditing({ ...editing, arrival_time: e.target.value })} /></div>
               </div>
             </div>
 
@@ -704,7 +704,7 @@ const NewsManager = () => {
                 <input
                   type="time"
                   className={INPUT_STYLE}
-                  value={editing.published_at ? new Date(editing.published_at).toISOString().slice(11, 16) : '12:00'}
+                  value={editing.published_at ? new Date(editing.published_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '12:00'}
                   onChange={e => {
                     const currentDate = editing.published_at ? new Date(editing.published_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
                     setEditing({ ...editing, published_at: new Date(`${currentDate}T${e.target.value}`).toISOString() });
@@ -727,11 +727,11 @@ const NewsManager = () => {
                 <p className="text-[10px] text-gray-400 mt-1 ml-1">La noticia se mostrará a partir de esta fecha</p>
               </div>
               <div>
-                <label className={LABEL_STYLE}>Hora de Publicación</label>
+                <label className={LABEL_STYLE}>Hora de Publicación (24h)</label>
                 <input
                   type="time"
                   className={INPUT_STYLE}
-                  value={editing.publish_date ? new Date(editing.publish_date).toISOString().slice(11, 16) : '00:00'}
+                  value={editing.publish_date ? new Date(editing.publish_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '00:00'}
                   onChange={e => {
                     const currentDate = editing.publish_date ? new Date(editing.publish_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
                     setEditing({ ...editing, publish_date: new Date(`${currentDate}T${e.target.value}`).toISOString() });
@@ -930,7 +930,7 @@ const MessageManager = () => {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">
-                    {new Date(msg.timestamp).toLocaleDateString()} {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(msg.timestamp).toLocaleDateString()} {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
                   </span>
                   <button onClick={() => deleteMessage(msg.id)} className="text-red-300 hover:text-red-500 transition-colors bg-red-50 dark:bg-transparent p-2 rounded-lg">
                     <Trash2 size={16} />
