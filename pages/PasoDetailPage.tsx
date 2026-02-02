@@ -113,9 +113,9 @@ const PasoDetailPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods }
                                 {displayDay}
                             </span>
 
-                            <Link to={`/brotherhood/${encodeURIComponent(currentPaso.brotherhood)}`} className="w-20 h-20 sm:w-24 sm:h-24 bg-white dark:bg-[#111] rounded-[24px] sm:rounded-[32px] shadow-2xl p-1 flex items-center justify-center shrink-0 border-2 border-[#D4AF37] hover:scale-110 transition-transform duration-500 animate-in zoom-in overflow-hidden">
+                            <Link to={`/brotherhood/${encodeURIComponent(currentPaso.brotherhood)}`} className="w-20 h-20 sm:w-24 sm:h-24 bg-white dark:bg-[#111] rounded-[24px] sm:rounded-[32px] shadow-2xl p-2 flex items-center justify-center shrink-0 border-2 border-[#D4AF37] hover:scale-110 transition-transform duration-500 animate-in zoom-in overflow-hidden">
                                 {crest ? (
-                                    <img src={crest} className="w-full h-full object-contain" alt="Escudo" />
+                                    <img src={crest} className="w-full h-full object-contain rounded-xl" alt="Escudo" />
                                 ) : (
                                     <Shield size={36} className="text-goldCofrade" />
                                 )}
