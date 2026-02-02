@@ -179,7 +179,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                 <button onClick={() => navigate(-1)} className="absolute top-6 left-6 z-50 p-3 bg-black/30 rounded-full text-white"><ChevronLeft size={24} /></button>
 
                 <div className="relative z-10 flex flex-col items-center text-center animate-in zoom-in">
-                    <div className="w-28 h-28 bg-white dark:bg-[#1E1E1E] rounded-[32px] shadow-2xl p-1 flex items-center justify-center mb-6 border-4 border-[#D4AF37]">
+                    <div className="w-28 h-28 bg-white dark:bg-[#111] rounded-[32px] shadow-2xl p-1 flex items-center justify-center mb-6 border-4 border-[#D4AF37]">
                         {crest ? <img src={crest} className="w-full h-full object-contain" /> : <Shield size={56} className="text-[#D4AF37]" />}
                     </div>
                     <h1 className="text-xl md:text-3xl font-cofrade text-white font-bold mb-2">{mainInfo.name || decodedName}</h1>
