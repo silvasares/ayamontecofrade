@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Trash2, Edit, LogOut, Church, Music, Loader2, ShieldCheck, Image, MapPin,
-  X, Save, AlertCircle, Layers, Newspaper, Shirt, Sparkles, Map as MapIcon, Info, Users, Flower, Database, Copy, Palette, Calendar, Mail, Settings, Type, Check
+  X, Save, AlertCircle, Layers, Newspaper, Shirt, Sparkles, Map as MapIcon, Info, Users, Flower, Database, Copy, Palette, Calendar, Mail, Settings, Type, Check, Plus, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
@@ -414,14 +414,90 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
             </div>
 
             <div className="space-y-4">
-              <div className="flex justify-between items-center border-b pb-1"><h4 className="text-[10px] font-black text-goldCofrade uppercase">Itinerario de Calles</h4><button type="button" onClick={() => setEditing({ ...editing, route: [...(editing.route || []), ''] })} className="text-[10px] font-bold text-purpleCofrade uppercase">+ Añadir</button></div>
+              <div className="flex justify-between items-center border-b pb-1">
+                <h4 className="text-[10px] font-black text-goldCofrade uppercase">Itinerario de Calles</h4>
+                <button
+                  type="button"
+                  onClick={() => setEditing({ ...editing, route: ['', ...(editing.route || [])] })}
+                  className="text-[10px] font-bold text-purpleCofrade uppercase bg-gray-50 dark:bg-white/5 px-2 py-1 rounded-md"
+                >
+                  + Añadir al Inicio
+                </button>
+              </div>
               <div className="space-y-2">
                 {(editing.route || []).map((point: string, idx: number) => (
-                  <div key={idx} className="flex gap-2 items-center">
-                    <input className={INPUT_STYLE} value={point} onChange={e => { const nr = [...editing.route]; nr[idx] = e.target.value; setEditing({ ...editing, route: nr }); }} placeholder="Calle..." />
-                    <button type="button" onClick={() => setEditing({ ...editing, route: editing.route.filter((_: any, i: number) => i !== idx) })} className="p-2 text-red-500"><X size={16} /></button>
+                  <div key={idx} className="flex gap-2 items-center group animate-in slide-in-from-left-2" style={{ animationDelay: `${idx * 30}ms` }}>
+                    <div className="flex flex-col -gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (idx === 0) return;
+                          const nr = [...editing.route];
+                          [nr[idx], nr[idx - 1]] = [nr[idx - 1], nr[idx]];
+                          setEditing({ ...editing, route: nr });
+                        }}
+                        className="p-1 text-gray-400 hover:text-goldCofrade transition-colors"
+                      >
+                        <ArrowUp size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (idx === editing.route.length - 1) return;
+                          const nr = [...editing.route];
+                          [nr[idx], nr[idx + 1]] = [nr[idx + 1], nr[idx]];
+                          setEditing({ ...editing, route: nr });
+                        }}
+                        className="p-1 text-gray-400 hover:text-goldCofrade transition-colors"
+                      >
+                        <ArrowDown size={12} />
+                      </button>
+                    </div>
+
+                    <div className="relative flex-grow">
+                      <input
+                        className={INPUT_STYLE}
+                        value={point}
+                        onChange={e => {
+                          const nr = [...editing.route];
+                          nr[idx] = e.target.value;
+                          setEditing({ ...editing, route: nr });
+                        }}
+                        placeholder={`Calle ${idx + 1}...`}
+                      />
+                      <span className="absolute -left-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-gray-300 dark:text-gray-700 w-6 text-right">{idx + 1}</span>
+                    </div>
+
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nr = [...editing.route];
+                          nr.splice(idx + 1, 0, ''); // Insertar después de la calle actual
+                          setEditing({ ...editing, route: nr });
+                        }}
+                        className="p-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                        title="Insertar calle debajo"
+                      >
+                        <Plus size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditing({ ...editing, route: editing.route.filter((_: any, i: number) => i !== idx) })}
+                        className="p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
                   </div>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => setEditing({ ...editing, route: [...(editing.route || []), ''] })}
+                  className="w-full py-3 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-2xl text-[10px] font-black uppercase text-gray-400 hover:border-goldCofrade hover:text-goldCofrade transition-all mt-2"
+                >
+                  + Añadir Calle al Final
+                </button>
               </div>
             </div>
 
