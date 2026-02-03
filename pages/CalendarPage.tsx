@@ -142,8 +142,7 @@ const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
                 >
                   <div className="p-6 md:p-10">
                     <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-center text-center md:text-left">
-                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-[32px] md:rounded-[40px] bg-white dark:bg-[#111] shadow-[0_30px_60px_-15px_rgba(48,0,80,0.15)] border border-goldCofrade/10 flex items-center justify-center p-2 shrink-0 group-hover:rotate-3 group-hover:scale-105 transition-all duration-700 relative overflow-hidden">
-                        <div className="absolute inset-0 bg-goldCofrade/5"></div>
+                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-[36px] md:rounded-[44px] bg-white dark:bg-[#111] shadow-[0_30px_60px_-15px_rgba(48,0,80,0.15)] border-4 border-[#D4AF37] flex items-center justify-center p-3 shrink-0 group-hover:rotate-3 group-hover:scale-105 transition-all duration-700 relative overflow-hidden">
                         {crest ? (
                           <img src={crest} alt="Escudo" className="w-full h-full object-contain relative z-10" />
                         ) : (
