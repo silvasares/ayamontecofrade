@@ -129,15 +129,10 @@ const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
 
         {dailyBrotherhoodsNames.length > 0 ? (
           dailyBrotherhoodsNames.map((bName: string) => {
-            // Filter steps for this brotherhood and selected day (using brotherhood data source of truth)
-            const bPasos = pasos.filter(p => {
-              const b = brotherhoods?.find(br => br.name === p.brotherhood || br.id === p.brotherhood_id);
-              const realDay = b ? b.day : p.day;
-              return p.brotherhood === bName && realDay === selectedDay;
-            });
-
+            const linkedBrotherhood = brotherhoods.find(br => br.name === bName);
+            const bPasos = pasos.filter(p => p.brotherhood === bName || p.brotherhood_id === linkedBrotherhood?.id);
             const firstPaso = bPasos[0];
-            const crest = (firstPaso.technical_data as any)?.brotherhoodCrest || (firstPaso as any).brotherhoodCrest;
+            const crest = linkedBrotherhood?.crest;
 
             return (
               <div key={bName} className="animate-in slide-in-from-bottom-6">
@@ -159,7 +154,7 @@ const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
                       <div className="flex-grow w-full">
                         <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-4 mb-4 md:mb-5">
                           <span className="gold-gradient text-[#300050] px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
-                            <Clock size={12} /> {firstPaso.startTime}
+                            <Clock size={12} /> {firstPaso?.startTime || linkedBrotherhood?.startTime || linkedBrotherhood?.start_time || '--:--'}
                           </span>
                         </div>
 
