@@ -252,7 +252,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                     const destination = temple ? temple.address : consolidatedRoute[0] || 'Ayamonte';
                                     const encodedDest = encodeURIComponent(destination);
                                     const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedDest}&travelmode=walking`;
-                                    window.open(mapsUrl, '_blank');
+                                    window.location.href = mapsUrl;
                                 }}
                                 className="bg-white dark:bg-[#1A1A1A] p-4 rounded-[24px] text-gray-900 dark:text-white flex items-center justify-between shadow-lg border border-goldCofrade/20 active:scale-95 transition-all"
                             >
