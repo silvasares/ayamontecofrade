@@ -270,37 +270,43 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                         </div>
                     </div>
 
-                    {/* Hábito y Estrenos */}
+                    {/* Hábito y Estrenos - Patrimonio */}
                     {(mainInfo.vestry || mainInfo.premieres) && (
                         <div className="bg-white dark:bg-[#1A1A1A] rounded-[32px] p-8 shadow-sm border border-gray-100 dark:border-gray-800 space-y-8">
                             <h3 className="text-sm font-black text-[#4B0082] dark:text-goldCofrade uppercase tracking-widest flex items-center gap-2 border-b pb-3">
                                 <Sparkles size={16} /> Patrimonio
                             </h3>
 
-                            {mainInfo.vestry && (
-                                <div className="flex gap-6 items-start">
-                                    <div className="shrink-0 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl text-[#4B0082] dark:text-goldCofrade"><Shirt size={24} /></div>
-                                    <div className="flex flex-col sm:flex-row gap-6 flex-grow">
-                                        <div className="flex-grow">
-                                            <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Hábito Nazareno</p>
-                                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{mainInfo.vestry}</p>
+                            <div className="space-y-8">
+                                {mainInfo.vestry && (
+                                    <div className="flex gap-6 items-start">
+                                        <div className="shrink-0 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl text-[#4B0082] dark:text-goldCofrade">
+                                            <Shirt size={24} />
                                         </div>
-                                        {mainInfo.vestry_image && (
-                                            <img src={mainInfo.vestry_image} className="w-[80px] h-auto object-contain rounded-xl border border-goldCofrade/20 shadow-lg" alt="Hábito" />
-                                        )}
+                                        <div className="flex flex-col sm:flex-row gap-6 flex-grow">
+                                            <div className="flex-grow">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Hábito Nazareno</p>
+                                                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{mainInfo.vestry}</p>
+                                            </div>
+                                            {mainInfo.vestry_image && (
+                                                <img src={mainInfo.vestry_image} className="w-[80px] h-auto object-contain rounded-xl border border-goldCofrade/20 shadow-lg" alt="Hábito" />
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
-                            {mainInfo.premieres && (
-                                <div className="flex gap-6 items-start border-t border-gray-50 dark:border-gray-800 pt-8">
-                                    <div className="shrink-0 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-2xl text-yellow-600 dark:text-yellow-400"><Sparkles size={24} /></div>
-                                    <div className="flex-grow">
-                                        <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Estrenos y Reformas</p>
-                                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed italic">{mainInfo.premieres}</p>
+                                {mainInfo.premieres && (
+                                    <div className={`flex gap-6 items-start ${mainInfo.vestry ? 'border-t border-gray-50 dark:border-gray-800 pt-8' : ''}`}>
+                                        <div className="shrink-0 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-2xl text-yellow-600 dark:text-yellow-400">
+                                            <Sparkles size={24} />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Estrenos y Reformas</p>
+                                            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed italic">{mainInfo.premieres}</p>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
+                            </div>
                         </div>
                     )}
 

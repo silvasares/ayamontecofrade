@@ -56,7 +56,9 @@ create table if not exists bands (
 -- 4. Tabla Pasos (Asegurar referencias)
 alter table pasos add column if not exists band_id uuid references bands(id);
 alter table pasos add column if not exists floral_arrangement text;
-alter table pasos add column if not exists foundation_year integer;
+alter table pasos add column if not exists foundation_year text;
+alter table hermandades alter column foundation_year type text;
+alter table pasos alter column foundation_year type text;
 
 -- 5. Tabla Templos
 alter table temples add column if not exists history text;
@@ -290,12 +292,10 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
     setSaving(true);
     setErrorInfo(null);
 
-    // Saneamiento de datos
-    const fYear = parseInt(editing.foundation_year);
     const payload = {
       name: editing.name || '',
       history: editing.history || '',
-      foundation_year: isNaN(fYear) ? null : fYear,
+      foundation_year: editing.foundation_year || '',
       elder_brother: editing.elder_brother || '',
       crest: editing.crest || '',
       temple_id: editing.temple_id || null,
@@ -370,7 +370,7 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
                 </select>
               </div>
               <div><label className={LABEL_STYLE}>Hermano Mayor</label><input className={INPUT_STYLE} value={editing.elder_brother || ''} onChange={e => setEditing({ ...editing, elder_brother: e.target.value })} /></div>
-              <div><label className={LABEL_STYLE}>Año Fundación</label><input type="number" className={INPUT_STYLE} value={editing.foundation_year || ''} onChange={e => setEditing({ ...editing, foundation_year: e.target.value })} /></div>
+              <div><label className={LABEL_STYLE}>Año Fundación</label><input className={INPUT_STYLE} value={editing.foundation_year || ''} onChange={e => setEditing({ ...editing, foundation_year: e.target.value })} placeholder="Ej. 1918, S. XVIII..." /></div>
               <div><label className={LABEL_STYLE}>Templo</label>
                 <select className={INPUT_STYLE} value={editing.temple_id || ''} onChange={e => setEditing({ ...editing, temple_id: e.target.value })}>
                   <option value="">Seleccionar Templo</option>
@@ -546,6 +546,9 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
       band_id: editing.band_id || null,
       description: editing.description || '',
       history: editing.history || '',
+      vestry: editing.vestry || '',
+      vestry_image: editing.vestry_image || '',
+      premieres: editing.premieres || '',
       floral_arrangement: editing.floral_arrangement || '',
       gallery: editing.gallery || [],
       foundation_year: editing.foundation_year || null,
@@ -619,6 +622,15 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
               </div>
               <div className="md:col-span-2"><label className={LABEL_STYLE}>Descripción Estética</label><textarea rows={2} className={INPUT_STYLE} value={editing.description || ''} onChange={e => setEditing({ ...editing, description: e.target.value })} /></div>
               <div className="md:col-span-2"><label className={LABEL_STYLE}>Historia / Reseña del Titular</label><textarea rows={3} className={INPUT_STYLE} value={editing.history || ''} onChange={e => setEditing({ ...editing, history: e.target.value })} /></div>
+
+              <div className="md:col-span-2 space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
+                <h4 className="text-[10px] font-black text-goldCofrade uppercase border-b pb-1">Hábito y Estrenos Propios del Titular</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2"><label className={LABEL_STYLE}>Hábito Nazareno (Si es distinto al de la Hermandad)</label><textarea rows={2} className={INPUT_STYLE} value={editing.vestry || ''} onChange={e => setEditing({ ...editing, vestry: e.target.value })} /></div>
+                  <div className="md:col-span-2"><label className={LABEL_STYLE}>URL Imagen Hábito (Específica)</label><input className={INPUT_STYLE} value={editing.vestry_image || ''} onChange={e => setEditing({ ...editing, vestry_image: e.target.value })} /></div>
+                  <div className="md:col-span-2"><label className={LABEL_STYLE}>Estrenos y Reformas del Titular</label><textarea rows={2} className={INPUT_STYLE} value={editing.premieres || ''} onChange={e => setEditing({ ...editing, premieres: e.target.value })} /></div>
+                </div>
+              </div>
             </div>
 
 

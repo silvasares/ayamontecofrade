@@ -24,7 +24,7 @@ export interface Brotherhood {
   id: string;
   name: string;
   history: string;
-  foundation_year?: number;
+  foundation_year?: string;
   temple_id?: string;
   elder_brother?: string;
   day: string;

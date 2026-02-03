@@ -288,6 +288,60 @@ const PasoDetailPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods }
                     <section className="mb-12">
                         <div className="flex items-center gap-4 mb-6 px-1">
                             <div className="h-px bg-goldCofrade/30 flex-grow"></div>
+                            <h3 className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-[0.3em]">Patrimonio</h3>
+                            <div className="h-px bg-goldCofrade/30 flex-grow"></div>
+                        </div>
+
+                        {/* Hábito y Estrenos logic */}
+                        {(() => {
+                            const vestry = currentPaso.vestry || linkedBrotherhood?.vestry;
+                            const vestry_image = currentPaso.vestry_image || linkedBrotherhood?.vestry_image;
+                            const premieres = currentPaso.premieres || linkedBrotherhood?.premieres;
+
+                            if (!vestry && !premieres) return (
+                                <div className="luxury-card rounded-[40px] p-8 text-center italic text-gray-500 text-sm">
+                                    No hay información de patrimonio disponible
+                                </div>
+                            );
+
+                            return (
+                                <div className="luxury-card rounded-[48px] p-10 space-y-8">
+                                    {vestry && (
+                                        <div className="flex gap-6 items-start">
+                                            <div className="shrink-0 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl text-[#4B0082] dark:text-goldCofrade">
+                                                <Shirt size={24} />
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row gap-6 flex-grow">
+                                                <div className="flex-grow">
+                                                    <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Hábito Nazareno</p>
+                                                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{vestry}</p>
+                                                </div>
+                                                {vestry_image && (
+                                                    <img src={vestry_image} className="w-[80px] h-auto object-contain rounded-xl border border-goldCofrade/20 shadow-lg" alt="Hábito" />
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {premieres && (
+                                        <div className={`flex gap-6 items-start ${vestry ? 'border-t border-gray-100 dark:border-gray-800 pt-8' : ''}`}>
+                                            <div className="shrink-0 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-2xl text-yellow-600 dark:text-yellow-400">
+                                                <Sparkles size={24} />
+                                            </div>
+                                            <div className="flex-grow">
+                                                <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Estrenos y Reformas</p>
+                                                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed italic">{premieres}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
+                    </section>
+
+                    <section className="mb-12">
+                        <div className="flex items-center gap-4 mb-6 px-1">
+                            <div className="h-px bg-goldCofrade/30 flex-grow"></div>
                             <h3 className="text-[11px] font-black text-gray-900 dark:text-white uppercase tracking-[0.3em]">Reseña Histórica</h3>
                             <div className="h-px bg-goldCofrade/30 flex-grow"></div>
                         </div>
