@@ -709,7 +709,11 @@ const NewsManager = () => {
     <div className="space-y-6">
       <div className={`${SECTION_CARD} flex justify-between items-center`}>
         <div className="flex items-center gap-4"><Newspaper className="text-blue-500" /><h3 className="font-cofrade text-2xl">Noticias</h3></div>
-        <button onClick={() => { setErrorInfo(null); setEditing({ title: '', content: '', image: '', published_at: new Date().toISOString() }); }} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Redactar</button>
+        <button onClick={() => {
+          setErrorInfo(null);
+          const now = new Date().toISOString();
+          setEditing({ title: '', content: '', image: '', published_at: now, publish_date: now });
+        }} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Redactar</button>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
@@ -753,10 +757,18 @@ const NewsManager = () => {
                 <input
                   type="date"
                   className={INPUT_STYLE}
-                  value={editing.published_at ? new Date(editing.published_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)}
+                  value={(() => {
+                    if (!editing.published_at) return '';
+                    const d = new Date(editing.published_at);
+                    return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+                  })()}
                   onChange={e => {
-                    const currentTime = editing.published_at ? new Date(editing.published_at).toISOString().slice(11, 16) : '12:00';
-                    setEditing({ ...editing, published_at: new Date(`${e.target.value}T${currentTime}`).toISOString() });
+                    if (!e.target.value) return;
+                    const d = editing.published_at ? new Date(editing.published_at) : new Date();
+                    const currentTime = isNaN(d.getTime()) ? '12:00' : d.toISOString().slice(11, 16);
+                    try {
+                      setEditing({ ...editing, published_at: new Date(`${e.target.value}T${currentTime}`).toISOString() });
+                    } catch (err) { console.error("Invalid date combination"); }
                   }}
                 />
               </div>
@@ -765,10 +777,18 @@ const NewsManager = () => {
                 <input
                   type="time"
                   className={INPUT_STYLE}
-                  value={editing.published_at ? new Date(editing.published_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '12:00'}
+                  value={(() => {
+                    if (!editing.published_at) return '12:00';
+                    const d = new Date(editing.published_at);
+                    return isNaN(d.getTime()) ? '12:00' : d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                  })()}
                   onChange={e => {
-                    const currentDate = editing.published_at ? new Date(editing.published_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
-                    setEditing({ ...editing, published_at: new Date(`${currentDate}T${e.target.value}`).toISOString() });
+                    if (!e.target.value) return;
+                    const d = editing.published_at ? new Date(editing.published_at) : new Date();
+                    const currentDate = isNaN(d.getTime()) ? new Date().toISOString().slice(0, 10) : d.toISOString().slice(0, 10);
+                    try {
+                      setEditing({ ...editing, published_at: new Date(`${currentDate}T${e.target.value}`).toISOString() });
+                    } catch (err) { console.error("Invalid time combination"); }
                   }}
                 />
               </div>
@@ -779,10 +799,18 @@ const NewsManager = () => {
                 <input
                   type="date"
                   className={INPUT_STYLE}
-                  value={editing.publish_date ? new Date(editing.publish_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10)}
+                  value={(() => {
+                    if (!editing.publish_date) return '';
+                    const d = new Date(editing.publish_date);
+                    return isNaN(d.getTime()) ? '' : d.toISOString().slice(0, 10);
+                  })()}
                   onChange={e => {
-                    const currentTime = editing.publish_date ? new Date(editing.publish_date).toISOString().slice(11, 16) : '00:00';
-                    setEditing({ ...editing, publish_date: new Date(`${e.target.value}T${currentTime}`).toISOString() });
+                    if (!e.target.value) return;
+                    const d = editing.publish_date ? new Date(editing.publish_date) : new Date();
+                    const currentTime = isNaN(d.getTime()) ? '00:00' : d.toISOString().slice(11, 16);
+                    try {
+                      setEditing({ ...editing, publish_date: new Date(`${e.target.value}T${currentTime}`).toISOString() });
+                    } catch (err) { console.error("Invalid publish date combination"); }
                   }}
                 />
                 <p className="text-[10px] text-gray-400 mt-1 ml-1">La noticia se mostrará a partir de esta fecha</p>
@@ -792,10 +820,18 @@ const NewsManager = () => {
                 <input
                   type="time"
                   className={INPUT_STYLE}
-                  value={editing.publish_date ? new Date(editing.publish_date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '00:00'}
+                  value={(() => {
+                    if (!editing.publish_date) return '00:00';
+                    const d = new Date(editing.publish_date);
+                    return isNaN(d.getTime()) ? '00:00' : d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+                  })()}
                   onChange={e => {
-                    const currentDate = editing.publish_date ? new Date(editing.publish_date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
-                    setEditing({ ...editing, publish_date: new Date(`${currentDate}T${e.target.value}`).toISOString() });
+                    if (!e.target.value) return;
+                    const d = editing.publish_date ? new Date(editing.publish_date) : new Date();
+                    const currentDate = isNaN(d.getTime()) ? new Date().toISOString().slice(0, 10) : d.toISOString().slice(0, 10);
+                    try {
+                      setEditing({ ...editing, publish_date: new Date(`${currentDate}T${e.target.value}`).toISOString() });
+                    } catch (err) { console.error("Invalid publish time combination"); }
                   }}
                 />
               </div>
