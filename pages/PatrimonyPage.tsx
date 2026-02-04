@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Church, Image as ImageIcon, MapPin, X, Landmark } from 'lucide-react';
+import { Church, Image as ImageIcon, MapPin, X, Landmark, ExternalLink } from 'lucide-react';
 import { Temple } from '../types';
 
 interface Props {
@@ -67,25 +67,28 @@ const PatrimonyPage: React.FC<Props> = ({ temples, posters }) => {
                                     </div>
                                 </div>
                                 <div className="p-6">
-                                    <div
-                                        className="flex items-start gap-3 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl mb-4 cursor-pointer active:scale-95 transition-all border border-transparent hover:border-goldCofrade/20"
-                                        onClick={() => {
-                                            const encodedDest = encodeURIComponent(temple.address);
-                                            const isAndroid = /Android/i.test(navigator.userAgent);
-                                            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                                    {(() => {
+                                        const encodedDest = encodeURIComponent(temple.address);
+                                        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                                        const mapsUrl = isIOS
+                                            ? `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`
+                                            : `https://maps.google.com/?daddr=${encodedDest}&directionsmode=walking`;
 
-                                            if (isAndroid) {
-                                                window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodedDest}`;
-                                            } else if (isIOS) {
-                                                window.location.href = `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`;
-                                            } else {
-                                                window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${encodedDest}&travelmode=walking`;
-                                            }
-                                        }}
-                                    >
-                                        <MapPin className="text-goldCofrade shrink-0 mt-1" size={18} />
-                                        <p className="text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed">{temple.address}</p>
-                                    </div>
+                                        return (
+                                            <a
+                                                href={mapsUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center justify-between gap-3 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl mb-4 cursor-pointer active:scale-95 transition-all border border-transparent hover:border-goldCofrade/20"
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <MapPin className="text-goldCofrade shrink-0 mt-1" size={18} />
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed">{temple.address}</p>
+                                                </div>
+                                                <ExternalLink size={14} className="text-gray-400 shrink-0" />
+                                            </a>
+                                        );
+                                    })()}
                                     <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-3 leading-relaxed text-justify px-1">{temple.description}</p>
                                     {temple.history && (
                                         <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5 animate-in fade-in slide-in-from-top-2">

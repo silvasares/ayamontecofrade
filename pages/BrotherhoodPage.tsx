@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
     Shield, ChevronLeft, MapPin, Calendar, Info, ChevronRight,
-    Cross, Crown, Sparkles, Shirt, Map as MapIcon, Loader2, Music, User, Tag, History, X
+    Cross, Crown, Sparkles, Shirt, Map as MapIcon, Loader2, Music, User, Tag, History, X, ExternalLink
 } from 'lucide-react';
 import { Paso, Temple, Brotherhood } from '../types';
 import { supabase } from '../supabase';
@@ -247,38 +247,38 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                         </div>
 
                         <div className="grid grid-cols-1 gap-4 mb-8">
-                            <button
-                                onClick={() => {
-                                    const destination = temple ? temple.address : consolidatedRoute[0] || 'Ayamonte';
-                                    const encodedDest = encodeURIComponent(destination);
+                            {(() => {
+                                const destination = temple ? temple.address : consolidatedRoute[0] || 'Ayamonte';
+                                const encodedDest = encodeURIComponent(destination);
+                                const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-                                    const isAndroid = /Android/i.test(navigator.userAgent);
-                                    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                                // Formato más directo para evitar redirecciones 'intent://' en Android/Kodular
+                                const mapsUrl = isIOS
+                                    ? `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`
+                                    : `https://maps.google.com/?daddr=${encodedDest}&directionsmode=walking`;
 
-                                    if (isAndroid) {
-                                        // Enlace universal compatible con Kodular y Android
-                                        window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodedDest}`;
-                                    } else if (isIOS) {
-                                        // Abre Apple Maps en iOS
-                                        window.location.href = `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`;
-                                    } else {
-                                        // Web estándar
-                                        window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${encodedDest}&travelmode=walking`;
-                                    }
-                                }}
-                                className="bg-white dark:bg-[#1A1A1A] p-4 rounded-[24px] text-gray-900 dark:text-white flex items-center justify-between shadow-lg border border-goldCofrade/20 active:scale-95 transition-all"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-2xl text-[#4B0082] dark:text-goldCofrade">
-                                        <MapPin size={20} />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className="text-[9px] font-black uppercase text-gray-400 tracking-[0.2em]">GPS</p>
-                                        <p className="text-sm font-bold">Cómo Llegar</p>
-                                    </div>
-                                </div>
-                                <ChevronRight size={20} className="text-goldCofrade" />
-                            </button>
+                                return (
+                                    <a
+                                        href={mapsUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="bg-white dark:bg-[#1A1A1A] p-4 rounded-[24px] text-gray-900 dark:text-white flex items-center justify-between shadow-lg border border-goldCofrade/20 active:scale-95 transition-all cursor-pointer"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-2xl text-[#4B0082] dark:text-goldCofrade">
+                                                <MapPin size={24} />
+                                            </div>
+                                            <div className="text-left">
+                                                <p className="text-[10px] font-black text-goldCofrade uppercase tracking-[0.2em] mb-0.5">Cómo Llegar</p>
+                                                <p className="text-xs font-bold text-gray-500 dark:text-gray-400">Abrir en Mapas</p>
+                                            </div>
+                                        </div>
+                                        <div className="bg-gray-50 dark:bg-white/5 p-2 rounded-full text-gray-400">
+                                            <ExternalLink size={18} />
+                                        </div>
+                                    </a>
+                                );
+                            })()}
                         </div>
                     </div>
 
