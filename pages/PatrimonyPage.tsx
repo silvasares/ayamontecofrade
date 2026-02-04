@@ -75,7 +75,7 @@ const PatrimonyPage: React.FC<Props> = ({ temples, posters }) => {
                                             const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
                                             if (isAndroid) {
-                                                window.location.href = `geo:0,0?q=${encodedDest}`;
+                                                window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodedDest}`;
                                             } else if (isIOS) {
                                                 window.location.href = `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`;
                                             } else {

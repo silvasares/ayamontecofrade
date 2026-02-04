@@ -256,8 +256,8 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                     const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
 
                                     if (isAndroid) {
-                                        // Abre el selector de apps de mapas en Android
-                                        window.location.href = `geo:0,0?q=${encodedDest}`;
+                                        // Enlace universal compatible con Kodular y Android
+                                        window.location.href = `https://www.google.com/maps/search/?api=1&query=${encodedDest}`;
                                     } else if (isIOS) {
                                         // Abre Apple Maps en iOS
                                         window.location.href = `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`;
