@@ -251,8 +251,20 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                 onClick={() => {
                                     const destination = temple ? temple.address : consolidatedRoute[0] || 'Ayamonte';
                                     const encodedDest = encodeURIComponent(destination);
-                                    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodedDest}&travelmode=walking`;
-                                    window.location.href = mapsUrl;
+
+                                    const isAndroid = /Android/i.test(navigator.userAgent);
+                                    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                                    if (isAndroid) {
+                                        // Abre el selector de apps de mapas en Android
+                                        window.location.href = `geo:0,0?q=${encodedDest}`;
+                                    } else if (isIOS) {
+                                        // Abre Apple Maps en iOS
+                                        window.location.href = `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`;
+                                    } else {
+                                        // Web estándar
+                                        window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${encodedDest}&travelmode=walking`;
+                                    }
                                 }}
                                 className="bg-white dark:bg-[#1A1A1A] p-4 rounded-[24px] text-gray-900 dark:text-white flex items-center justify-between shadow-lg border border-goldCofrade/20 active:scale-95 transition-all"
                             >

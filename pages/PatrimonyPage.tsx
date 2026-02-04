@@ -67,7 +67,22 @@ const PatrimonyPage: React.FC<Props> = ({ temples, posters }) => {
                                     </div>
                                 </div>
                                 <div className="p-6">
-                                    <div className="flex items-start gap-3 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl mb-4">
+                                    <div
+                                        className="flex items-start gap-3 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl mb-4 cursor-pointer active:scale-95 transition-all border border-transparent hover:border-goldCofrade/20"
+                                        onClick={() => {
+                                            const encodedDest = encodeURIComponent(temple.address);
+                                            const isAndroid = /Android/i.test(navigator.userAgent);
+                                            const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+                                            if (isAndroid) {
+                                                window.location.href = `geo:0,0?q=${encodedDest}`;
+                                            } else if (isIOS) {
+                                                window.location.href = `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`;
+                                            } else {
+                                                window.location.href = `https://www.google.com/maps/dir/?api=1&destination=${encodedDest}&travelmode=walking`;
+                                            }
+                                        }}
+                                    >
                                         <MapPin className="text-goldCofrade shrink-0 mt-1" size={18} />
                                         <p className="text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed">{temple.address}</p>
                                     </div>
