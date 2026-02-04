@@ -68,11 +68,23 @@ const PatrimonyPage: React.FC<Props> = ({ temples, posters }) => {
                                 </div>
                                 <div className="p-6">
                                     {(() => {
+                                        const ua = window.navigator.userAgent;
+                                        const isWebView = /wv|Version\/[\d\.]+/i.test(ua) || (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(ua));
+
                                         const encodedDest = encodeURIComponent(temple.address);
-                                        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                                        const isIOS = /iPhone|iPad|iPod/i.test(ua);
                                         const mapsUrl = isIOS
                                             ? `maps://maps.apple.com/?daddr=${encodedDest}&dirflg=w`
                                             : `https://maps.google.com/?daddr=${encodedDest}&directionsmode=walking`;
+
+                                        if (isWebView) {
+                                            return (
+                                                <div className="flex items-start gap-3 bg-gray-50 dark:bg-white/5 p-4 rounded-2xl mb-4 border border-transparent">
+                                                    <MapPin className="text-goldCofrade shrink-0 mt-1" size={18} />
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300 font-medium leading-relaxed">{temple.address}</p>
+                                                </div>
+                                            );
+                                        }
 
                                         return (
                                             <a

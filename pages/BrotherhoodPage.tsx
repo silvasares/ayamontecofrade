@@ -248,9 +248,15 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
 
                         <div className="grid grid-cols-1 gap-4 mb-8">
                             {(() => {
+                                const ua = window.navigator.userAgent;
+                                const isWebView = /wv|Version\/[\d\.]+/i.test(ua) || (/(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(ua));
+
+                                // Si es un WebView (App compilada), no mostramos el botón para evitar errores de protocolo
+                                if (isWebView) return null;
+
                                 const destination = temple ? temple.address : consolidatedRoute[0] || 'Ayamonte';
                                 const encodedDest = encodeURIComponent(destination);
-                                const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+                                const isIOS = /iPhone|iPad|iPod/i.test(ua);
 
                                 // Formato más directo para evitar redirecciones 'intent://' en Android/Kodular
                                 const mapsUrl = isIOS
