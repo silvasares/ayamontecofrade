@@ -1,73 +1,82 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { WeatherData } from '../types';
 
-const CACHE_KEY = 'ac_weather_cache_v7';
-const CACHE_EXPIRY = 60 * 60 * 1000;
+const CACHE_KEY = 'ac_weather_cache_openmeteo_v1';
+const CACHE_EXPIRY = 30 * 60 * 1000; // 30 minutes cache for better accuracy
+
+// Ayamonte, Huelva coordinates
+const LAT = 37.2152;
+const LON = -7.4055;
 
 export const getAyamonteWeather = async (): Promise<WeatherData[]> => {
-  let cached = null;
+  // 1. Check Cache
   try {
-    cached = localStorage.getItem(CACHE_KEY);
-  } catch (e) { }
-
-  if (cached) {
-    try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
       const { timestamp, data } = JSON.parse(cached);
       if (Date.now() - timestamp < CACHE_EXPIRY) return data;
-    } catch (e) { }
-  }
-
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY || (import.meta.env as any).GEMINI_API_KEY;
-  if (!apiKey || apiKey === "undefined") return getFallbackWeather();
+    }
+  } catch (e) { }
 
   try {
-    const genAI = new GoogleGenerativeAI(apiKey.trim());
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.5-flash"
+    // 2. Fetch from Open-Meteo (Real-time & Reliable)
+    const response = await fetch(
+      `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&daily=weathercode,temperature_2m_max&current_weather=true&timezone=Europe%2FMadrid`
+    );
+
+    if (!response.ok) throw new Error('Weather API error');
+
+    const rawData = await response.json();
+    const days = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+    const now = new Date();
+
+    const forecast: WeatherData[] = rawData.daily.time.slice(0, 5).map((dateStr: string, i: number) => {
+      const date = new Date(dateStr);
+      const isToday = i === 0;
+      const code = rawData.daily.weathercode[i];
+      const temp = Math.round(isToday ? rawData.current_weather.temperature : rawData.daily.temperature_2m_max[i]);
+
+      const { icon, condition } = getWeatherInfo(code);
+
+      return {
+        dayName: isToday ? 'HOY' : days[date.getDay()],
+        temp,
+        condition,
+        icon
+      };
     });
 
-    const prompt = `Actúa como un experto meteorólogo para Ayamonte, Huelva.
-    Consulta el tiempo para HOY y los próximos 4 días.
-    DEVUELVE ÚNICAMENTE UN ARRAY JSON con este formato exacto:
-    [{"dayName": "HOY", "temp": 14, "condition": "Soleado", "icon": "☀️"}, ...]
-    Asegúrate de que 'temp' sea un número.`;
+    // 3. Save to Cache
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      timestamp: Date.now(),
+      data: forecast
+    }));
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    return forecast;
 
-    const jsonMatch = text.match(/\[\s*\{[\s\S]*\}\s*\]/);
-
-    if (jsonMatch) {
-      let data = JSON.parse(jsonMatch[0]);
-      if (Array.isArray(data)) {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          timestamp: Date.now(),
-          data
-        }));
-        return data.slice(0, 5);
-      }
-    }
-    return getFallbackWeather();
   } catch (error) {
-    console.error("Weather Error:", error);
-
-    // Intento con 1.5 si el 2.5 falla
-    try {
-      const genAI = new GoogleGenerativeAI(apiKey.trim());
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-      const result = await model.generateContent("Weather for Ayamonte, Huelva in JSON format");
-      const response = await result.response;
-      const jsonMatch = response.text().match(/\[\s*\{[\s\S]*\}\s*\]/);
-      if (jsonMatch) return JSON.parse(jsonMatch[0]);
-    } catch (e2) { }
-
+    console.error("Weather Service Error:", error);
     return getFallbackWeather();
   }
 };
 
+/**
+ * Maps WMO Weather interpretation codes (WW) to Icons and Descriptions
+ * https://open-meteo.com/en/docs
+ */
+const getWeatherInfo = (code: number): { icon: string; condition: string } => {
+  if (code === 0) return { icon: "☀️", condition: "Despejado" };
+  if (code >= 1 && code <= 3) return { icon: "🌤️", condition: "Nubosidad variable" };
+  if (code === 45 || code === 48) return { icon: "🌫️", condition: "Niebla" };
+  if (code >= 51 && code <= 55) return { icon: "🌦️", condition: "Llovizna" };
+  if (code >= 61 && code <= 65) return { icon: "🌧️", condition: "Lluvia" };
+  if (code >= 71 && code <= 77) return { icon: "❄️", condition: "Nieve" };
+  if (code >= 80 && code <= 82) return { icon: "🌦️", condition: "Chubascos" };
+  if (code >= 95) return { icon: "⛈️", condition: "Tormenta" };
+  return { icon: "☁️", condition: "Nublado" };
+};
+
 const getFallbackWeather = (): WeatherData[] => {
-  const days = ['DOM', 'LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB'];
+  const days = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
   const now = new Date();
   const forecast: WeatherData[] = [];
   for (let i = 0; i < 5; i++) {
@@ -76,8 +85,8 @@ const getFallbackWeather = (): WeatherData[] => {
     forecast.push({
       dayName: i === 0 ? 'HOY' : days[futureDate.getDay()],
       temp: 15,
-      condition: 'Variable',
-      icon: '🌦️'
+      condition: 'Consultando...',
+      icon: '☁️'
     });
   }
   return forecast;
