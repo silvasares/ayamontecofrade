@@ -333,7 +333,7 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
     <div className="space-y-6">
       <div className={`${SECTION_CARD} flex justify-between items-center`}>
         <div className="flex items-center gap-4"><ShieldCheck className="text-goldCofrade" /><h3 className="font-cofrade text-2xl">Hermandades</h3></div>
-        <button onClick={() => { setErrorInfo(null); setEditing({ name: '', day: defaultDay, route: [], order_index: data.length }); }} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Nueva</button>
+        <button onClick={() => { setErrorInfo(null); setEditing({ name: '', day: defaultDay, route: [], pois: [], order_index: data.length }); }} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Nueva</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

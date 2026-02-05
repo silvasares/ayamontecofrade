@@ -18,7 +18,12 @@ const PoisMapSelector: React.FC<PoisMapSelectorProps> = ({ value, onChange }) =>
     const mapContainerRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<any>(null);
     const markersRef = useRef<any[]>([]);
-    const [editingPoi, setEditingPoi] = useState<{ index: number, name: string } | null>(null);
+    const [editingPoi, setEditingPoi] = useState<{
+        index: number,
+        name: string,
+        coords?: [number, number],
+        isNew?: boolean
+    } | null>(null);
 
     // Inicializar mapa
     useEffect(() => {
@@ -34,18 +39,6 @@ const PoisMapSelector: React.FC<PoisMapSelectorProps> = ({ value, onChange }) =>
                 attribution: '© OpenStreetMap'
             }).addTo(mapInstanceRef.current);
 
-            // Manejador de click en el mapa para AÑADIR puntos
-            mapInstanceRef.current.on('click', (e: any) => {
-                const newPoi: Poi = {
-                    name: 'Nuevo Punto',
-                    coords: [e.latlng.lat, e.latlng.lng]
-                };
-
-                // Abrir modal de edición para el nuevo punto
-                // Usamos un timeout corto para asegurar que el estado se actualice después de que el valor se propague
-                // Pero es más seguro añadirlo y luego abrir el editor.
-            });
-
             setTimeout(() => {
                 mapInstanceRef.current?.invalidateSize();
             }, 200);
@@ -57,14 +50,14 @@ const PoisMapSelector: React.FC<PoisMapSelectorProps> = ({ value, onChange }) =>
         if (!mapInstanceRef.current) return;
 
         const onMapClick = (e: any) => {
-            const newPoi: Poi = {
+            // No añadimos todavía al parent state para evitar race conditions
+            // Simplemente abrimos el editor con los datos temporales
+            setEditingPoi({
+                index: value.length,
                 name: 'Nuevo Punto de Interés',
-                coords: [e.latlng.lat, e.latlng.lng]
-            };
-            const newValue = [...value, newPoi];
-            onChange(newValue);
-            // Abrir el editor para el último punto añadido
-            setEditingPoi({ index: newValue.length - 1, name: newPoi.name });
+                coords: [e.latlng.lat, e.latlng.lng],
+                isNew: true
+            });
         };
 
         mapInstanceRef.current.off('click');
@@ -139,7 +132,17 @@ const PoisMapSelector: React.FC<PoisMapSelectorProps> = ({ value, onChange }) =>
         e.preventDefault();
         if (editingPoi !== null) {
             const newValue = [...value];
-            newValue[editingPoi.index] = { ...newValue[editingPoi.index], name: editingPoi.name };
+            if (editingPoi.isNew && editingPoi.coords) {
+                // Es un punto nuevo, lo añadimos
+                newValue.push({
+                    name: editingPoi.name || 'Punto de Interés',
+                    coords: editingPoi.coords
+                });
+            } else if (newValue[editingPoi.index]) {
+                // Es un punto existente, lo actualizamos
+                newValue[editingPoi.index] = { ...newValue[editingPoi.index], name: editingPoi.name };
+            }
+
             onChange(newValue);
             setEditingPoi(null);
         }
