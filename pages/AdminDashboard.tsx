@@ -74,6 +74,11 @@ grant select on app_settings to anon, authenticated;
 grant all on app_settings to service_role;
 grant all on app_settings to authenticated;
 
+-- 8. Columnas de Mapa y POIs (Asegurar que existen)
+alter table hermandades add column if not exists route_coords jsonb default '[]';
+alter table hermandades add column if not exists pois jsonb default '[]';
+alter table pasos add column if not exists route_coords jsonb default '[]';
+
 -- 7. Recargar caché de esquema para que los cambios se apliquen ya
 notify pgrst, 'reload schema';`;
 
@@ -322,7 +327,11 @@ const BrotherhoodManager = ({ temples, days }: { temples: Temple[], days: any[] 
         : await supabase.from('hermandades').insert([payload]);
 
       if (error) setErrorInfo(getErrorMessage(error));
-      else { setEditing(null); fetch(); }
+      else {
+        console.log("Brotherhood saved successfully");
+        setEditing(null);
+        fetch();
+      }
     } catch (err: any) { setErrorInfo(getErrorMessage(err)); }
     finally { setSaving(false); }
   };

@@ -224,7 +224,7 @@ const PoisMapSelector: React.FC<PoisMapSelectorProps> = ({ value, onChange }) =>
                             </div>
                             <button onClick={() => setEditingPoi(null)} className="p-2 hover:bg-white/10 rounded-full"><X size={20} /></button>
                         </div>
-                        <form onSubmit={handleSavePoiName} className="p-8 space-y-6">
+                        <div className="p-8 space-y-6">
                             <div>
                                 <label className="text-[10px] font-black uppercase text-gray-400 ml-1 mb-2 block tracking-widest">Nombre del Evento / Punto</label>
                                 <input
@@ -232,6 +232,12 @@ const PoisMapSelector: React.FC<PoisMapSelectorProps> = ({ value, onChange }) =>
                                     className="w-full p-4 bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 rounded-2xl outline-none font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all shadow-inner"
                                     value={editingPoi.name}
                                     onChange={e => setEditingPoi({ ...editingPoi, name: e.target.value })}
+                                    onKeyDown={e => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            handleSavePoiName(e as any);
+                                        }
+                                    }}
                                     placeholder="Ej. Encuentro, Tribuna, Petalá..."
                                 />
                             </div>
@@ -244,13 +250,14 @@ const PoisMapSelector: React.FC<PoisMapSelectorProps> = ({ value, onChange }) =>
                                     Eliminar
                                 </button>
                                 <button
-                                    type="submit"
+                                    type="button"
+                                    onClick={handleSavePoiName}
                                     className="flex-[2] bg-blue-600 text-white py-4 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl hover:bg-blue-700 hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                                 >
                                     <Save size={16} /> Guardar
                                 </button>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             )}
