@@ -683,7 +683,6 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
         <section>
           <div className="flex justify-between items-end mb-3 px-1">
             <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">Crónicas</h3>
-            <Link to="/news" className="text-[9px] font-bold text-[#4B0082] dark:text-[#D4AF37] hover:underline">Ver archivo</Link>
           </div>
           <div className="space-y-3">
             {visibleNews.map(item => (
@@ -702,6 +701,12 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
               </Link>
             ))}
           </div>
+          <Link
+            to="/news"
+            className="w-full mt-4 flex items-center justify-center gap-2 bg-white dark:bg-[#1E1E1E] py-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-[10px] font-black uppercase tracking-widest text-[#4B0082] dark:text-[#D4AF37] active:scale-[0.98] transition-all"
+          >
+            Ver más noticias <Newspaper size={14} />
+          </Link>
         </section>
 
       </div>
