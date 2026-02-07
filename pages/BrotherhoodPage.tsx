@@ -351,12 +351,12 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                                 </div>
                                 <div className="w-full h-[400px] relative">
                                     <RouteViewer coords={consolidatedRouteCoords} pois={mainInfo.pois} />
-                                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center z-[10] pointer-events-none">
+                                    <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center z-[2000] pointer-events-none">
                                         <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-xl border border-goldCofrade/20 shadow-xl pointer-events-auto">
                                             <p className="text-[10px] font-black text-[#300050] dark:text-goldCofrade uppercase tracking-widest">Mapa Interactivo</p>
                                         </div>
                                     </div>
-                                    <div className="absolute top-4 right-4 z-[10] pointer-events-none">
+                                    <div className="absolute top-4 right-4 z-[2000] pointer-events-none">
                                         <div className="flex flex-col gap-2">
                                             {mainInfo.pois && mainInfo.pois.length > 0 && (
                                                 <div className="bg-white/90 dark:bg-black/80 backdrop-blur-md p-3 rounded-2xl border border-goldCofrade/20 shadow-xl pointer-events-auto max-w-[200px]">

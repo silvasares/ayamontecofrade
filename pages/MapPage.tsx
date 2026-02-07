@@ -151,7 +151,7 @@ const MapPage: React.FC<MapProps> = ({ pasos, brotherhoods }) => {
 
       <div ref={mapRef} className="absolute inset-0 z-0 force-light-map"></div>
 
-      <div className="absolute top-0 left-0 right-0 z-[100] flex justify-between items-start pointer-events-none p-6 pt-safe">
+      <div className="absolute top-0 left-0 right-0 z-[2000] flex justify-between items-start pointer-events-none p-6 pt-safe">
         <button
           onClick={handleBack}
           className="p-4 bg-white/90 dark:bg-black/80 backdrop-blur-xl rounded-full shadow-2xl border border-goldCofrade/20 text-purpleCofrade dark:text-goldCofrade hover:scale-105 active:scale-90 transition-all pointer-events-auto"

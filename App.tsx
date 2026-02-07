@@ -115,7 +115,7 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
   const isRoot = ['/', '/calendar', '/news', '/patrimony'].includes(location.pathname);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
-  if (location.pathname.startsWith('/admin')) return null;
+  if (location.pathname.startsWith('/admin') || location.pathname.startsWith('/map')) return null;
 
   const performExit = () => {
     setShowExitConfirm(false);
