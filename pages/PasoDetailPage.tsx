@@ -294,37 +294,18 @@ const PasoDetailPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods }
 
                         {/* Hábito y Estrenos logic */}
                         {(() => {
-                            const vestry = currentPaso.vestry || linkedBrotherhood?.vestry;
-                            const vestry_image = currentPaso.vestry_image || linkedBrotherhood?.vestry_image;
                             const premieres = currentPaso.premieres || linkedBrotherhood?.premieres;
 
-                            if (!vestry && !premieres) return (
+                            if (!premieres) return (
                                 <div className="luxury-card rounded-[40px] p-8 text-center italic text-gray-500 text-sm">
-                                    No hay información de patrimonio disponible
+                                    No hay información de estrenos disponible
                                 </div>
                             );
 
                             return (
                                 <div className="luxury-card rounded-[48px] p-10 space-y-8">
-                                    {vestry && (
-                                        <div className="flex gap-6 items-start">
-                                            <div className="shrink-0 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-2xl text-[#4B0082] dark:text-goldCofrade">
-                                                <Shirt size={24} />
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row gap-6 flex-grow">
-                                                <div className="flex-grow">
-                                                    <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Hábito Nazareno</p>
-                                                    <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{vestry}</p>
-                                                </div>
-                                                {vestry_image && (
-                                                    <img src={vestry_image} className="w-[80px] h-auto object-contain rounded-xl border border-goldCofrade/20 shadow-lg" alt="Hábito" />
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-
                                     {premieres && (
-                                        <div className={`flex gap-6 items-start ${vestry ? 'border-t border-gray-100 dark:border-gray-800 pt-8' : ''}`}>
+                                        <div className="flex gap-6 items-start">
                                             <div className="shrink-0 bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-2xl text-yellow-600 dark:text-yellow-400">
                                                 <Sparkles size={24} />
                                             </div>
