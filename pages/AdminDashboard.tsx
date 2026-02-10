@@ -28,7 +28,7 @@ const SECTION_CARD = "bg-white dark:bg-[#111] p-6 rounded-[32px] border border-g
 const MODAL_OVERLAY = "fixed inset-0 z-[200] bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto";
 const MODAL_CONTENT = "bg-white dark:bg-[#0A0A0A] w-full max-w-4xl rounded-[40px] shadow-2xl my-8 border border-white/10 overflow-hidden relative animate-in zoom-in duration-300";
 
-const MIGRATION_SQL = `-- Script de Corrección Definitivo (Versión 4)
+const MIGRATION_SQL = `-- Script de Corrección Definitivo (Versión 5)
 -- Ejecuta esto en el SQL Editor de Supabase si ves errores de "column not found"
 
 -- 1. Tabla News
@@ -53,10 +53,12 @@ create table if not exists bands (
   created_at timestamptz default now()
 );
 
--- 4. Tabla Pasos (Asegurar referencias)
+-- 4. Tabla Pasos (Asegurar referencias y columnas)
 alter table pasos add column if not exists band_id uuid references bands(id);
 alter table pasos add column if not exists floral_arrangement text;
 alter table pasos add column if not exists foundation_year text;
+alter table pasos add column if not exists premieres text;
+alter table pasos add column if not exists vestry_image text;
 alter table hermandades alter column foundation_year type text;
 alter table pasos alter column foundation_year type text;
 
@@ -69,7 +71,19 @@ create table if not exists app_settings (
   value text
 );
 insert into app_settings (key, value) values ('header_title', 'AYAMONTE COFRADE 2026') on conflict do nothing;
-alter publication supabase_realtime add table app_settings;
+
+-- Corregir publicación de realtime (evita error 42710 si ya existe)
+do $$
+begin
+  if not exists (
+    select 1 from pg_publication_tables 
+    where pubname = 'supabase_realtime' 
+    and tablename = 'app_settings'
+  ) then
+    alter publication supabase_realtime add table app_settings;
+  end if;
+end $$;
+
 grant select on app_settings to anon, authenticated;
 grant all on app_settings to service_role;
 grant all on app_settings to authenticated;
@@ -79,7 +93,7 @@ alter table hermandades add column if not exists route_coords jsonb default '[]'
 alter table hermandades add column if not exists pois jsonb default '[]';
 alter table pasos add column if not exists route_coords jsonb default '[]';
 
--- 7. Recargar caché de esquema para que los cambios se apliquen ya
+-- 7. Recargar caché de esquema
 notify pgrst, 'reload schema';`;
 
 const getErrorMessage = (err: any): string => {
@@ -531,12 +545,49 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
   const [errorInfo, setErrorInfo] = useState<string | null>(null);
 
   const fetch = async () => {
-    const { data: p } = await supabase.from('pasos').select('*').order('order_index', { ascending: true });
-    const { data: b } = await supabase.from('hermandades').select('id, name');
+    // Obtenemos pasos con la información de su hermandad para poder ordenar
+    const { data: p } = await supabase.from('pasos').select('*, hermandades(day, order_index)');
+    const { data: b } = await supabase.from('hermandades').select('id, name, day, order_index').order('order_index');
     const { data: bandData } = await supabase.from('bands').select('id, name');
 
-    if (p) setPasos(p);
-    if (b) setBrotherhoods(b);
+    if (p && b) {
+      const dayWeights: Record<string, number> = {
+        [Day.VIERNES_DOLORES]: 0,
+        [Day.SABADO_PASION]: 1,
+        [Day.DOMINGO_RAMOS]: 2,
+        [Day.LUNES_SANTO]: 3,
+        [Day.MARTES_SANTO]: 4,
+        [Day.MIERCOLES_SANTO]: 5,
+        [Day.JUEVES_SANTO]: 6,
+        [Day.MADRUGA]: 7,
+        [Day.VIERNES_SANTO]: 8,
+        [Day.SABADO_SANTO]: 9,
+        [Day.DOMINGO_RESURRECCION]: 10,
+      };
+
+      const sorted = [...p].sort((a, b) => {
+        const hA = a.hermandades;
+        const hB = b.hermandades;
+
+        // 1. Orden por Día
+        const dayA = hA?.day || a.day;
+        const dayB = hB?.day || b.day;
+        const weightA = dayWeights[dayA] ?? 99;
+        const weightB = dayWeights[dayB] ?? 99;
+        if (weightA !== weightB) return weightA - weightB;
+
+        // 2. Orden por Hermandad
+        if ((hA?.order_index ?? 0) !== (hB?.order_index ?? 0)) {
+          return (hA?.order_index ?? 0) - (hB?.order_index ?? 0);
+        }
+
+        // 3. Orden por el propio paso
+        return (a.order_index ?? 0) - (b.order_index ?? 0);
+      });
+
+      setPasos(sorted);
+      setBrotherhoods(b);
+    }
     if (bandData) setBands(bandData);
   };
 
@@ -589,7 +640,32 @@ const PasoManager = ({ temples }: { temples: Temple[] }) => {
   return (
     <div className="space-y-6">
       <div className={`${SECTION_CARD} flex justify-between items-center`}><h3 className="font-cofrade text-2xl flex items-center gap-4"><Layers className="text-purple-500" />Titulares</h3><button onClick={() => setEditing({ name: '', day: Day.DOMINGO_RAMOS, technical_data: {}, order_index: pasos.length })} className="bg-purpleCofrade text-white px-6 py-3 rounded-xl text-xs font-bold">+ Nuevo</button></div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">{pasos.map(p => (<div key={p.id} className="bg-white dark:bg-[#111] p-4 rounded-3xl border flex justify-between items-center"><div><h4 className="font-bold">{p.name}</h4><div className="flex gap-2 text-[9px] uppercase font-black text-purple-400"><span>{p.day}</span><span className="text-goldCofrade">• Orden: {p.order_index || 0}</span></div></div><div className="flex gap-1"><button onClick={() => setEditing(p)} className="p-2 text-gray-300 hover:text-purple-500"><Edit size={18} /></button><DeleteButton onDelete={async () => { await supabase.from('pasos').delete().eq('id', p.id); fetch(); }} /></div></div>))}</div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {pasos.map(p => (
+          <div key={p.id} className="bg-white dark:bg-[#111] p-5 rounded-[32px] border flex justify-between items-center shadow-sm">
+            <div className="min-w-0">
+              <h4 className="font-bold text-sm truncate">{p.name}</h4>
+              <div className="flex flex-wrap gap-2 mt-1">
+                <span className="text-[9px] font-black uppercase text-purple-500 bg-purple-500/5 px-2 py-0.5 rounded-full">
+                  {p.hermandades?.day || p.day}
+                </span>
+                <span className="text-[9px] font-black uppercase text-goldCofrade bg-goldCofrade/5 px-2 py-0.5 rounded-full">
+                  {p.brotherhood || 'Sin Hermandad'}
+                </span>
+                <span className="text-[9px] font-black uppercase text-gray-400">
+                  Pos: {p.order_index || 0}
+                </span>
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <button onClick={() => { setErrorInfo(null); setEditing(p); }} className="p-2 text-gray-300 hover:text-purple-500 transition-colors">
+                <Edit size={18} />
+              </button>
+              <DeleteButton onDelete={async () => { await supabase.from('pasos').delete().eq('id', p.id); fetch(); }} />
+            </div>
+          </div>
+        ))}
+      </div>
 
       {editing && (
         <div className={MODAL_OVERLAY}><div className={MODAL_CONTENT}>
