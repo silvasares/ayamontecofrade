@@ -1132,25 +1132,37 @@ const MessageManager = () => {
 // --- CONFIGURACIÓN GENERAL ---
 const SettingsManager = () => {
   const [title, setTitle] = useState("AYAMONTE COFRADE 2026");
+  const [visitCount, setVisitCount] = useState("0");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSettings = async () => {
     setLoading(true);
-    const { data } = await supabase.from('app_settings').select('value').eq('key', 'header_title').single();
-    if (data) setTitle(data.value);
+    const { data: tData } = await supabase.from('app_settings').select('value').eq('key', 'header_title').maybeSingle();
+    const { data: vData } = await supabase.from('app_settings').select('value').eq('key', 'visit_count').maybeSingle();
+
+    if (tData) setTitle(tData.value);
+    if (vData) setVisitCount(vData.value);
     setLoading(false);
   };
 
   const saveSettings = async () => {
     setSaving(true);
     setError(null);
-    const { error } = await supabase.from('app_settings').upsert({ key: 'header_title', value: title });
-    if (error) {
-      setError(error.message);
-    } else {
-      alert("Título actualizado correctamente");
+    try {
+      const { error: tErr } = await supabase.from('app_settings').upsert({ key: 'header_title', value: title });
+      const { error: vErr } = await supabase.from('app_settings').upsert({ key: 'visit_count', value: visitCount });
+
+      if (tErr || vErr) {
+        setError(tErr?.message || vErr?.message || "Error al guardar");
+      } else {
+        alert("Configuración actualizada correctamente");
+        // Refrescar el contador en el sidebar si es necesario (aunque el sidebar tiene su propio estado)
+        window.location.reload();
+      }
+    } catch (e: any) {
+      setError(e.message);
     }
     setSaving(false);
   };
@@ -1185,6 +1197,20 @@ const SettingsManager = () => {
           </div>
         </div>
 
+        <div className="space-y-4 mt-6">
+          <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Contador de Visitas (Modificar/Reiniciar)</label>
+          <div className="relative">
+            <Users className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" size={18} />
+            <input
+              type="number"
+              value={visitCount}
+              onChange={(e) => setVisitCount(e.target.value)}
+              className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 p-4 pl-12 rounded-2xl font-bold text-lg outline-none focus:ring-2 focus:ring-purpleCofrade"
+            />
+          </div>
+          <p className="text-[10px] text-gray-500 italic ml-1">* Puedes ponerlo a 0 para reiniciar el contador o ajustarlo manualmente.</p>
+        </div>
+
         <div className="mt-8 flex justify-end">
           <button
             onClick={saveSettings}
@@ -1213,19 +1239,32 @@ const NavItem = ({ to, icon, label, currentPath }: any) => {
 const AdminDashboard: React.FC<AdminProps> = (props) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState("");
+  const [visitCount, setVisitCount] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem('ac_admin_auth') === 'true') setIsAuthenticated(true);
+    if (localStorage.getItem('ac_admin_auth') === 'true') {
+      setIsAuthenticated(true);
+      fetchVisits();
+    }
   }, []);
+
+  const fetchVisits = async () => {
+    try {
+      const { data } = await supabase.from('app_settings').select('value').eq('key', 'visit_count').single();
+      if (data) setVisitCount(data.value);
+    } catch (e) {
+      console.error('Error fetching visits:', e);
+    }
+  };
 
   const handleLogout = () => { localStorage.removeItem('ac_admin_auth'); setIsAuthenticated(false); navigate('/'); };
 
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-[#300050] flex items-center justify-center p-4">
-        <form onSubmit={e => { e.preventDefault(); if (pin === ADMIN_PIN) { setIsAuthenticated(true); localStorage.setItem('ac_admin_auth', 'true'); } else alert("PIN Incorrecto"); }} className="bg-white dark:bg-[#111] rounded-[40px] p-10 w-full max-w-xs text-center space-y-8 shadow-2xl animate-in zoom-in">
+        <form onSubmit={e => { e.preventDefault(); if (pin === ADMIN_PIN) { setIsAuthenticated(true); localStorage.setItem('ac_admin_auth', 'true'); fetchVisits(); } else alert("PIN Incorrecto"); }} className="bg-white dark:bg-[#111] rounded-[40px] p-10 w-full max-w-xs text-center space-y-8 shadow-2xl animate-in zoom-in">
           <div className="w-20 h-20 bg-purpleCofrade rounded-full flex items-center justify-center mx-auto shadow-xl"><ShieldCheck size={40} className="text-[#D4AF37]" /></div>
           <h2 className="font-cofrade text-3xl text-purpleCofrade dark:text-goldCofrade">Admin Access</h2>
           <input type="password" value={pin} onChange={e => setPin(e.target.value)} className="w-full bg-gray-50 dark:bg-black p-5 rounded-2xl text-center text-3xl tracking-[0.5em] font-black outline-none border border-gray-100 dark:border-gray-800 dark:text-white" placeholder="••••" maxLength={4} autoFocus />
@@ -1240,7 +1279,15 @@ const AdminDashboard: React.FC<AdminProps> = (props) => {
   return (
     <div className="min-h-screen bg-[#F9FAFB] dark:bg-[#050505] flex flex-col md:flex-row">
       <aside className="w-full md:w-72 bg-white dark:bg-[#111] border-r dark:border-gray-800 flex flex-col p-6 space-y-6 shrink-0">
-        <h1 className="font-cofrade text-2xl text-purpleCofrade dark:text-goldCofrade text-center md:text-left">Panel Admin</h1>
+        <div>
+          <h1 className="font-cofrade text-2xl text-purpleCofrade dark:text-goldCofrade text-center md:text-left leading-none">Panel Admin</h1>
+          <div className="mt-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-800/20">
+            <p className="text-[10px] font-black text-purpleCofrade dark:text-goldCofrade uppercase tracking-widest mb-1 flex items-center gap-2"><Users size={12} /> Visitas Reales</p>
+            <p className="text-2xl font-black text-purpleCofrade dark:text-white leading-none">
+              {visitCount !== null ? parseInt(visitCount).toLocaleString() : '...'}
+            </p>
+          </div>
+        </div>
         <nav className="flex-grow space-y-2">
           <NavItem to="/admin/hermandades" icon={<ShieldCheck size={18} />} label="Hermandades" currentPath={location.pathname} />
           <NavItem to="/admin/pasos" icon={<Layers size={18} />} label="Titulares / Pasos" currentPath={location.pathname} />

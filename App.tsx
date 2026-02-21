@@ -396,6 +396,23 @@ const AppContent = () => {
     fetchData();
     const interval = setInterval(fetchData, 60000);
 
+    // Incrementar contador de visitas
+    const incrementVisits = async () => {
+      // No contar si estamos en el panel de admin
+      if (window.location.hash.includes('/admin')) return;
+
+      // Evitar contar varias veces en la misma sesión/pestaña
+      if (sessionStorage.getItem('ac_visit_counted')) return;
+
+      try {
+        const { error } = await supabase.rpc('increment_visit_count');
+        if (!error) sessionStorage.setItem('ac_visit_counted', 'true');
+      } catch (e) {
+        console.warn('Error incrementing visits:', e);
+      }
+    };
+    incrementVisits();
+
     // Forzar modo oscuro siempre
     document.documentElement.classList.add('dark');
 
