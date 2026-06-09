@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { HashRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import {
   Calendar, Newspaper, Settings, Home, Bot, ChevronLeft, Sun, Moon,
   ArrowUp, Bell, X, Volume2, VolumeX, CheckCircle as CheckIcon, AlertTriangle,
@@ -263,7 +263,7 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
   );
 };
 
-const DesktopSidebar = () => {
+const DesktopSidebar = ({ isOffSeason }: { isOffSeason: boolean }) => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
 
@@ -286,10 +286,14 @@ const DesktopSidebar = () => {
       </div>
 
       <nav className="relative z-10 flex-1 px-6 space-y-3 overflow-y-auto no-scrollbar">
-        <Link to="/" className={getLinkStyle('/')}><Home size={20} /> Inicio</Link>
-        <Link to="/calendar" className={getLinkStyle('/calendar')}><Calendar size={20} /> Agenda</Link>
-        <Link to="/news" className={getLinkStyle('/news')}><Newspaper size={20} /> Noticias</Link>
-        <div className="h-px bg-white/10 my-4 mx-2"></div>
+        {!isOffSeason && (
+          <>
+            <Link to="/" className={getLinkStyle('/')}><Home size={20} /> Inicio</Link>
+            <Link to="/calendar" className={getLinkStyle('/calendar')}><Calendar size={20} /> Agenda</Link>
+            <Link to="/news" className={getLinkStyle('/news')}><Newspaper size={20} /> Noticias</Link>
+            <div className="h-px bg-white/10 my-4 mx-2"></div>
+          </>
+        )}
         <Link to="/patrimony" className={getLinkStyle('/patrimony')}><Landmark size={20} /> Patrimonio</Link>
       </nav>
 
@@ -308,6 +312,7 @@ const AppContent = () => {
   const isAdmin = location.pathname.startsWith('/admin');
 
 
+  const [isOffSeason, setIsOffSeason] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(() => safeStorage.getItem('ac_sound', 'true') !== 'false');
   const [pasos, setPasos] = useState<Paso[]>([]);
   const [news, setNews] = useState<News[]>([]);
@@ -389,6 +394,13 @@ const AppContent = () => {
       const { data: settingsData } = await supabase.from('app_settings').select('value').eq('key', 'header_title').single();
       if (settingsData) setHeaderTitle(settingsData.value);
 
+      const { data: offSeasonData } = await supabase.from('app_settings').select('value').eq('key', 'off_season').maybeSingle();
+      if (offSeasonData) {
+        setIsOffSeason(offSeasonData.value === 'true');
+      } else {
+        setIsOffSeason(true);
+      }
+
     } catch (err) { console.error(err); }
   };
 
@@ -424,12 +436,12 @@ const AppContent = () => {
     <div className="min-h-screen bg-luxuryWhite dark:bg-[#0A0A0A] flex flex-col transition-all duration-500">
       <InAppAlertModal alerts={activeInAppAlerts} onRead={(id) => { const read = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]')); safeStorage.setItem('ac_read_alerts', JSON.stringify([...read, id])); setActiveInAppAlerts(prev => prev.filter(a => a.id !== id)); }} soundEnabled={soundEnabled} />
 
-      {!isAdmin && <DesktopSidebar />}
+      {!isAdmin && <DesktopSidebar isOffSeason={isOffSeason} />}
       <MobileHeader soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} headerTitle={headerTitle} />
 
-      <main className={`flex-grow ${isAdmin ? '' : 'lg:ml-72 pb-32 pt-0 lg:pt-0'}`}>
+      <main className={`flex-grow ${isAdmin ? '' : `lg:ml-72 ${isOffSeason ? 'pb-8' : 'pb-32'} pt-0 lg:pt-0`}`}>
         <Routes>
-          <Route path="/" element={<PublicHome pasos={pasos} news={news} defaultCover="" departureStatus="" brotherhoods={brotherhoods} days={days} />} />
+          <Route path="/" element={isOffSeason ? <Navigate to="/patrimony" replace /> : <PublicHome pasos={pasos} news={news} defaultCover="" departureStatus="" brotherhoods={brotherhoods} days={days} />} />
           <Route path="/calendar" element={<CalendarPage pasos={pasos} days={days} brotherhoods={brotherhoods} />} />
           <Route path="/paso/:id" element={<PasoDetailPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
           <Route path="/brotherhood/:name" element={<BrotherhoodPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
@@ -441,7 +453,7 @@ const AppContent = () => {
         </Routes>
       </main>
 
-      {!isAdmin && (
+      {!isAdmin && !isOffSeason && (
         <nav className="fixed bottom-6 left-4 right-4 bg-[#300050]/95 backdrop-blur-2xl border border-white/10 h-20 rounded-[32px] flex items-center justify-around z-[200] md:hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <Link to="/" className={`flex flex-col items-center gap-1 transition-all duration-300 ${location.pathname === '/' ? 'text-goldCofrade scale-110' : 'text-gray-400 hover:text-white'}`}>
             <div className={`p-2 rounded-xl ${location.pathname === '/' ? 'bg-goldCofrade/10' : ''}`}>

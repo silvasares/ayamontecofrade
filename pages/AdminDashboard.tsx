@@ -1133,6 +1133,7 @@ const MessageManager = () => {
 const SettingsManager = () => {
   const [title, setTitle] = useState("AYAMONTE COFRADE 2026");
   const [visitCount, setVisitCount] = useState("0");
+  const [offSeason, setOffSeason] = useState(true);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1141,9 +1142,11 @@ const SettingsManager = () => {
     setLoading(true);
     const { data: tData } = await supabase.from('app_settings').select('value').eq('key', 'header_title').maybeSingle();
     const { data: vData } = await supabase.from('app_settings').select('value').eq('key', 'visit_count').maybeSingle();
+    const { data: oData } = await supabase.from('app_settings').select('value').eq('key', 'off_season').maybeSingle();
 
     if (tData) setTitle(tData.value);
     if (vData) setVisitCount(vData.value);
+    if (oData) setOffSeason(oData.value === 'true');
     setLoading(false);
   };
 
@@ -1153,12 +1156,12 @@ const SettingsManager = () => {
     try {
       const { error: tErr } = await supabase.from('app_settings').upsert({ key: 'header_title', value: title });
       const { error: vErr } = await supabase.from('app_settings').upsert({ key: 'visit_count', value: visitCount });
+      const { error: oErr } = await supabase.from('app_settings').upsert({ key: 'off_season', value: offSeason ? 'true' : 'false' });
 
-      if (tErr || vErr) {
-        setError(tErr?.message || vErr?.message || "Error al guardar");
+      if (tErr || vErr || oErr) {
+        setError(tErr?.message || vErr?.message || oErr?.message || "Error al guardar");
       } else {
         alert("Configuración actualizada correctamente");
-        // Refrescar el contador en el sidebar si es necesario (aunque el sidebar tiene su propio estado)
         window.location.reload();
       }
     } catch (e: any) {
@@ -1211,11 +1214,28 @@ const SettingsManager = () => {
           <p className="text-[10px] text-gray-500 italic ml-1">* Puedes ponerlo a 0 para reiniciar el contador o ajustarlo manualmente.</p>
         </div>
 
+        <div className="space-y-4 mt-6 border-t border-gray-100 dark:border-gray-800 pt-6">
+          <label className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Visibilidad de la Aplicación</label>
+          <div className="flex items-center gap-4 bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 p-4 rounded-2xl">
+            <input
+              type="checkbox"
+              id="offSeason"
+              checked={offSeason}
+              onChange={(e) => setOffSeason(e.target.checked)}
+              className="w-5 h-5 accent-purpleCofrade cursor-pointer"
+            />
+            <label htmlFor="offSeason" className="cursor-pointer font-bold text-gray-700 dark:text-gray-300 text-sm select-none">
+              Modo Fuera de Temporada (Oculta menús y redirige al Patrimonio)
+            </label>
+          </div>
+          <p className="text-[10px] text-gray-500 italic ml-1">* Si lo desmarcas, la aplicación volverá a mostrar la portada de Semana Santa, la agenda, noticias y la barra de navegación completa.</p>
+        </div>
+
         <div className="mt-8 flex justify-end">
           <button
             onClick={saveSettings}
             disabled={saving}
-            className="bg-purpleCofrade text-white px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-xl flex items-center gap-2 hover:scale-105 transition-transform disabled:opacity-50"
+            className="bg-[#300050] text-[#D4AF37] hover:bg-[#4B0082] px-8 py-3 rounded-xl font-bold uppercase text-xs tracking-widest shadow-xl flex items-center gap-2 hover:scale-105 transition-transform disabled:opacity-50"
           >
             {saving ? <Loader2 className="animate-spin" size={16} /> : <Check size={16} />}
             Guardar Cambios
