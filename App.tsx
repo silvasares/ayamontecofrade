@@ -4,7 +4,7 @@ import { HashRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } f
 import {
   Calendar, Newspaper, Settings, Home, Bot, ChevronLeft, Sun, Moon,
   ArrowUp, Bell, X, Volume2, VolumeX, CheckCircle as CheckIcon, AlertTriangle,
-  Shield, Map, LogIn, MapPin, Navigation, Lock, Landmark, Power
+  Shield, Map, LogIn, MapPin, Navigation, Lock, Landmark, Power, Eye, EyeOff
 } from 'lucide-react';
 import PublicHome from './pages/PublicHome';
 import CalendarPage from './pages/CalendarPage';
@@ -263,9 +263,10 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
   );
 };
 
-const DesktopSidebar = ({ isOffSeason }: { isOffSeason: boolean }) => {
+const DesktopSidebar = ({ isOffSeason, onToggleOffSeason }: { isOffSeason: boolean; onToggleOffSeason: (val: boolean) => void }) => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
+  const [toggling, setToggling] = useState(false);
 
   const getLinkStyle = (path: string) => `
       flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 font-bold text-sm
@@ -273,6 +274,18 @@ const DesktopSidebar = ({ isOffSeason }: { isOffSeason: boolean }) => {
       ? 'bg-white text-[#4B0082] shadow-xl scale-105 ring-1 ring-[#D4AF37]/20'
       : 'text-gray-300 hover:bg-white/10 hover:text-white'}
       `;
+
+  const handleToggleVisibility = async () => {
+    setToggling(true);
+    const newVal = !isOffSeason;
+    try {
+      await supabase.from('app_settings').upsert({ key: 'off_season', value: newVal ? 'true' : 'false' });
+      onToggleOffSeason(newVal);
+    } catch (e) {
+      console.error('Error toggling visibility:', e);
+    }
+    setToggling(false);
+  };
 
   return (
     <aside className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-72 bg-[#300050] flex-col shadow-[10px_0_40px_rgba(0,0,0,0.3)] border-r border-[#D4AF37]/20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
@@ -297,11 +310,54 @@ const DesktopSidebar = ({ isOffSeason }: { isOffSeason: boolean }) => {
         <Link to="/patrimony" className={getLinkStyle('/patrimony')}><Landmark size={20} /> Patrimonio</Link>
       </nav>
 
-      <div className="relative z-10 p-8 text-center border-t border-white/5 space-y-4">
-        <p className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-black">Semana Santa 2025</p>
-        <Link to="/admin" className="flex items-center justify-center gap-2 text-white/20 hover:text-white/60 transition-colors text-[10px] uppercase font-bold tracking-widest p-2 rounded-lg hover:bg-white/5">
-          <Lock size={10} /> Acceso Interno
+      {/* Admin Controls Section */}
+      <div className="relative z-10 px-6 pb-4 border-t border-white/10 pt-4 space-y-3">
+        <p className="text-[9px] text-white/30 uppercase tracking-[0.25em] font-black px-2">Panel de Control</p>
+
+        {/* Visibility Toggle */}
+        <button
+          onClick={handleToggleVisibility}
+          disabled={toggling}
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
+            isOffSeason
+              ? 'bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/20'
+              : 'bg-green-500/10 text-green-300 hover:bg-green-500/20 border border-green-500/20'
+          } ${toggling ? 'opacity-50 cursor-wait' : ''}`}
+        >
+          {isOffSeason ? <EyeOff size={16} /> : <Eye size={16} />}
+          <div className="flex-1 text-left">
+            <span className="block uppercase tracking-wider text-[10px]">
+              {isOffSeason ? 'App Oculta' : 'App Visible'}
+            </span>
+            <span className="block text-[9px] opacity-60 mt-0.5">
+              {isOffSeason ? 'Solo Patrimonio' : 'Contenido completo'}
+            </span>
+          </div>
+          <div className={`w-9 h-5 rounded-full flex items-center transition-all duration-300 ${
+            isOffSeason ? 'bg-red-500/30 justify-start' : 'bg-green-500/30 justify-end'
+          }`}>
+            <div className={`w-4 h-4 rounded-full mx-0.5 transition-all duration-300 shadow-sm ${
+              isOffSeason ? 'bg-red-400' : 'bg-green-400'
+            }`}></div>
+          </div>
+        </button>
+
+        {/* Admin Link */}
+        <Link
+          to="/admin"
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
+            isActive('/admin')
+              ? 'bg-[#D4AF37] text-[#300050] shadow-lg'
+              : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
+          }`}
+        >
+          <Settings size={16} />
+          <span className="uppercase tracking-wider text-[10px]">Administración</span>
         </Link>
+      </div>
+
+      <div className="relative z-10 px-8 py-4 text-center border-t border-white/5">
+        <p className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-black">Semana Santa 2025</p>
       </div>
     </aside>
   );
@@ -436,7 +492,7 @@ const AppContent = () => {
     <div className="min-h-screen bg-luxuryWhite dark:bg-[#0A0A0A] flex flex-col transition-all duration-500">
       <InAppAlertModal alerts={activeInAppAlerts} onRead={(id) => { const read = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]')); safeStorage.setItem('ac_read_alerts', JSON.stringify([...read, id])); setActiveInAppAlerts(prev => prev.filter(a => a.id !== id)); }} soundEnabled={soundEnabled} />
 
-      {!isAdmin && <DesktopSidebar isOffSeason={isOffSeason} />}
+      {!isAdmin && <DesktopSidebar isOffSeason={isOffSeason} onToggleOffSeason={(val) => setIsOffSeason(val)} />}
       <MobileHeader soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} headerTitle={headerTitle} />
 
       <main className={`flex-grow ${isAdmin ? '' : `lg:ml-72 ${isOffSeason ? 'pb-8' : 'pb-32'} pt-0 lg:pt-0`}`}>
