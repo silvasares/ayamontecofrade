@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://vlugwkbodufvnrarpeyk.supabase.co';
-const supabaseKey = 'sb_publishable_c3vtZB8WbyviaTXz1QZJVA_VsiclPsC';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY as string;
 
 // Mock de persistencia local para cuando no hay credenciales
 const getLocalData = (table: string) => {
@@ -48,9 +48,6 @@ class MockQuery {
     }
 
     update(payload: any) {
-        // En un mock simple, el update es global o requiere eq previo. 
-        // Para el admin, guardamos el eq y lo aplicamos en el then si es necesario, 
-        // pero para insertar/editar es suficiente con interceptar el payload.
         this.filters.push({ type: 'update', payload });
         return this;
     }
@@ -61,27 +58,42 @@ class MockQuery {
     }
 
     eq(column: string, value: any) {
-        if (column === 'id') this.filters.push({ type: 'id', value });
+        this.filters.push({ type: 'eq', column, value });
         return this;
     }
 
     then(resolve: any) {
         let data = getLocalData(this.table);
 
-        // Aplicar filtros básicos si existen (especialmente por ID para update/delete)
-        const idFilter = this.filters.find(f => f.type === 'id');
+        const eqFilters = this.filters.filter(f => f.type === 'eq');
         const updateAction = this.filters.find(f => f.type === 'update');
         const deleteAction = this.filters.find(f => f.type === 'delete');
 
-        if (idFilter) {
-            if (updateAction) {
-                data = data.map((item: any) => item.id === idFilter.value ? { ...item, ...updateAction.payload } : item);
+        // Aplicar filtros eq
+        if (eqFilters.length > 0) {
+            for (const filter of eqFilters) {
+                data = data.filter((item: any) => item[filter.column] === filter.value);
+            }
+        }
+
+        if (updateAction) {
+            if (eqFilters.length > 0) {
+                data = data.map((item: any) => {
+                    let match = true;
+                    for (const filter of eqFilters) {
+                        if (item[filter.column] !== filter.value) { match = false; break; }
+                    }
+                    return match ? { ...item, ...updateAction.payload } : item;
+                });
                 setLocalData(this.table, data);
-            } else if (deleteAction) {
-                data = data.filter((item: any) => item.id !== idFilter.value);
-                setLocalData(this.table, data);
-            } else {
-                data = data.filter((item: any) => item.id === idFilter.value);
+            }
+        } else if (deleteAction) {
+            if (eqFilters.length > 0) {
+                const fullData = getLocalData(this.table);
+                const idsToRemove = new Set(data.map((item: any) => item.id));
+                const filtered = fullData.filter((item: any) => !idsToRemove.has(item.id));
+                setLocalData(this.table, filtered);
+                data = filtered;
             }
         }
 

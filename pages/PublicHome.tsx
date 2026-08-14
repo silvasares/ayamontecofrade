@@ -104,15 +104,33 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
   const [aiQuery, setAiQuery] = useState('');
   const navigate = useNavigate();
 
+  // Determinar si estamos en ventana de Semana Santa (máx 5 días antes de la primera procesión)
+  const isNearSemanaSanta = useMemo(() => {
+    if (!days || days.length === 0) return false;
+    const now = new Date();
+    for (const d of days) {
+      if (d.date) {
+        const eventDate = new Date(d.date);
+        const diffMs = eventDate.getTime() - now.getTime();
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        if (diffDays >= -1 && diffDays <= 5) return true;
+      }
+    }
+    return false;
+  }, [days]);
+
   useEffect(() => {
-    getAyamonteWeather().then(data => {
-      setForecast(data);
+    if (isNearSemanaSanta) {
+      getAyamonteWeather().then(data => {
+        setForecast(data);
+        setLoadingWeather(false);
+      });
+    } else {
       setLoadingWeather(false);
-    });
-    // Actualizamos 'now' basándonos en el huso horario de España
+    }
     const interval = setInterval(() => setNow(getSpainTime()), 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isNearSemanaSanta]);
 
   const handleRequestPermission = async () => {
     try {
@@ -363,7 +381,8 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
 
         <div className="relative z-10 px-6 pt-16">
 
-          {/* MÓDULO 1: TIEMPO (Prioridad Absoluta) */}
+          {/* MÓDULO 1: TIEMPO - Solo se muestra cuando falta <=5 días para alguna procesión */}
+          {isNearSemanaSanta && (
           <div className="w-full flex flex-col items-center mb-4">
             <div className="flex items-center gap-1.5 mb-2 opacity-60">
               <MapIcon size={10} className="text-[#D4AF37]" />
@@ -389,6 +408,7 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
               </div>
             </div>
           </div>
+          )}
 
           {/* MÓDULO 2: PREGUNTA RÁPIDA A LA IA */}
           <form onSubmit={handleAiSubmit} className="relative max-w-sm mx-auto group">
@@ -497,19 +517,25 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
 
                         {(() => {
                           const pDay = getPasoDay(nextPaso);
+                          // Si no estamos en ventana de Semana Santa, no mostrar predicción
+                          if (!isNearSemanaSanta) {
+                            return (
+                              <div className="flex items-center gap-1.5 bg-white/20 text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm border border-white/10">
+                                <Calendar size={10} />
+                                <span className="text-[9px] font-bold uppercase tracking-wider">Aún quedan días</span>
+                              </div>
+                            );
+                          }
+
                           // 1. Verificar si la fecha es lejana (más de 4 días) para no inventar datos
-                          // Intentamos buscar la fecha exacta en la configuración de días
                           let isFar = false;
                           if (days && days.length > 0) {
                             const scheduleDay = days.find(d => d.name === pDay);
                             if (scheduleDay && scheduleDay.date) {
                               const eventDate = new Date(scheduleDay.date);
                               const now = new Date();
-                              // Calculamos diferencia en días
                               const diffTime = eventDate.getTime() - now.getTime();
                               const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                              // Si faltan más de 5 días (margen seguro de predicción), no mostrar predicción
                               if (diffDays > 5) isFar = true;
                             }
                           }

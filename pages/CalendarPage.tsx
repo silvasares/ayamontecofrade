@@ -66,8 +66,8 @@ const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
     // 2. Ordenarlas por startTime y luego por order_index
     const sorted = [...bFromTable].sort((a, b) => {
       // Comparar por hora de salida (más fiable para el orden cronológico)
-      const timeA = a.startTime || a.start_time || '99:99';
-      const timeB = b.startTime || b.start_time || '99:99';
+      const timeA = a.startTime || '99:99';
+      const timeB = b.startTime || '99:99';
 
       if (timeA !== timeB) {
         return timeA.localeCompare(timeB);
@@ -153,7 +153,7 @@ const CalendarPage: React.FC<Props> = ({ pasos, days, brotherhoods }) => {
                       <div className="flex-grow w-full">
                         <div className="flex flex-wrap justify-center md:justify-start items-center gap-3 md:gap-4 mb-4 md:mb-5">
                           <span className="gold-gradient text-[#300050] px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg flex items-center gap-2">
-                            <Clock size={12} /> {firstPaso?.startTime || linkedBrotherhood?.startTime || linkedBrotherhood?.start_time || '--:--'}
+                            <Clock size={12} /> {firstPaso?.startTime || linkedBrotherhood?.startTime || '--:--'}
                           </span>
                         </div>
 

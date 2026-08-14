@@ -234,7 +234,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                         <div className="grid grid-cols-3 gap-4 mb-8">
                             <div className="luxury-card p-4 rounded-[24px] text-center border-t-4 border-t-goldCofrade/40">
                                 <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1.5 flex items-center justify-center gap-1"><Info size={10} /> Salida</p>
-                                <p className="text-lg font-black text-purpleCofrade dark:text-goldCofrade">{mainInfo.start_time || '--:--'}</p>
+                                <p className="text-lg font-black text-purpleCofrade dark:text-goldCofrade">{mainInfo.startTime || '--:--'}</p>
                             </div>
                             <div className="luxury-card p-4 rounded-[24px] text-center border-t-4 border-t-goldCofrade">
                                 <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1.5 flex items-center justify-center gap-1"><Info size={10} /> Tribuna</p>
@@ -242,7 +242,7 @@ const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods 
                             </div>
                             <div className="luxury-card p-4 rounded-[24px] text-center border-t-4 border-t-purpleCofrade/40">
                                 <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1.5 flex items-center justify-center gap-1"><Info size={10} /> Recogida</p>
-                                <p className="text-lg font-black text-purpleCofrade dark:text-goldCofrade">{mainInfo.arrival_time || '--:--'}</p>
+                                <p className="text-lg font-black text-purpleCofrade dark:text-goldCofrade">{mainInfo.arrivalTime || '--:--'}</p>
                             </div>
                         </div>
 

@@ -34,9 +34,7 @@ export interface Brotherhood {
   vestry?: string;
   vestry_image?: string;
   premieres?: string;
-  start_time?: string;
   startTime?: string;
-  arrival_time?: string;
   arrivalTime?: string;
   tribuna_time?: string;
   route?: string[];
@@ -53,9 +51,7 @@ export interface Paso {
   description: string;
   history: string;
   foundation_year?: string;
-  foundationYear?: string;
   main_image?: string;
-  mainImage?: string;
   gallery: string[];
   temple_id: string;
   vestry?: string;
@@ -69,13 +65,11 @@ export interface Paso {
     foreman?: string;
     costaleros?: string;
     color?: string;
-    tribunaTime?: string; // Standardized in technical_data but shared via brotherhood
+    tribunaTime?: string;
   };
   band_id?: string;
   day: string;
-  start_time?: string;
   startTime?: string;
-  arrival_time?: string;
   arrivalTime?: string;
   route: string[];
   route_coords?: [number, number][];

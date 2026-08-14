@@ -416,8 +416,8 @@ const AppContent = () => {
         setPasos(steps.map(s => {
           const b = processedBrotherhoods.find(br => br.id === s.brotherhood_id);
           // Only fallback if the specific paso time is missing
-          const fallbackStart = b?.startTime || b?.start_time?.substring(0, 5);
-          const fallbackEnd = b?.arrivalTime || b?.arrival_time?.substring(0, 5);
+          const fallbackStart = b?.startTime;
+          const fallbackEnd = b?.arrivalTime;
 
           return {
             ...s,
