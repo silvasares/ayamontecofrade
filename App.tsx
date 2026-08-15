@@ -64,15 +64,19 @@ const InAppAlertModal = ({ alerts, onRead, soundEnabled }: { alerts: Alert[], on
   if (!visibleAlert) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-4 bg-[#300050]/90 backdrop-blur-xl animate-in fade-in">
-      <div className="bg-white dark:bg-[#141414] w-full max-w-sm rounded-[48px] shadow-2xl border-t-8 border-goldCofrade overflow-hidden animate-in zoom-in">
-        <div className="bg-[#4B0082] p-10 text-center text-white">
-          <div className="bg-goldCofrade w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-[#300050]"><Bell size={32} /></div>
-          <h3 className="font-cofrade text-2xl uppercase">{visibleAlert.title}</h3>
+    <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white dark:bg-[#2C2C2E] w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in">
+        <div className="p-6 text-center">
+          <div className="w-12 h-12 rounded-full bg-[#4B0082]/10 dark:bg-[#D4AF37]/10 flex items-center justify-center mx-auto mb-4">
+            <Bell size={20} className="text-[#4B0082] dark:text-[#D4AF37]" />
+          </div>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{visibleAlert.title}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{visibleAlert.body}</p>
         </div>
-        <div className="p-8 text-center">
-          <p className="text-gray-900 dark:text-gray-100 text-lg mb-8 font-serif italic">"{visibleAlert.body}"</p>
-          <button onClick={() => onRead(visibleAlert.id)} className="w-full gold-gradient text-[#300050] py-5 rounded-2xl font-black uppercase text-xs">Cerrar Aviso</button>
+        <div className="border-t border-gray-100 dark:border-white/10">
+          <button onClick={() => onRead(visibleAlert.id)} className="w-full py-3.5 text-sm font-semibold text-[#4B0082] dark:text-[#D4AF37] active:bg-gray-50 dark:active:bg-white/5 transition-colors">
+            Cerrar
+          </button>
         </div>
       </div>
     </div>
@@ -83,23 +87,23 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: { isO
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in">
-      <div className="bg-white dark:bg-[#1C1C1E] w-full max-w-xs rounded-2xl shadow-2xl scale-100 overflow-hidden animate-in zoom-in-95 duration-200">
-        <div className="p-6 text-center">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{title}</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-300">{message}</p>
+    <div className="fixed inset-0 z-[9999999] flex items-center justify-center p-6 bg-black/50 backdrop-blur-sm animate-in fade-in">
+      <div className="bg-white dark:bg-[#2C2C2E] w-full max-w-xs rounded-2xl shadow-2xl overflow-hidden animate-in">
+        <div className="p-5 text-center">
+          <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">{title}</h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{message}</p>
         </div>
-        <div className="flex border-t border-gray-200 dark:border-white/10">
+        <div className="border-t border-gray-100 dark:border-white/10 flex">
           <button
             onClick={onClose}
-            className="flex-1 py-4 text-base font-medium text-blue-600 dark:text-blue-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors active:bg-gray-100 dark:active:bg-white/10"
+            className="flex-1 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 active:bg-gray-50 dark:active:bg-white/5 transition-colors"
           >
             Cancelar
           </button>
-          <div className="w-px bg-gray-200 dark:bg-white/10"></div>
+          <div className="w-px bg-gray-100 dark:bg-white/10"></div>
           <button
             onClick={onConfirm}
-            className="flex-1 py-4 text-base font-bold text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors active:bg-red-100 dark:active:bg-red-500/20"
+            className="flex-1 py-3 text-sm font-semibold text-red-500 active:bg-red-50 dark:active:bg-red-500/10 transition-colors"
           >
             Salir
           </button>
@@ -238,24 +242,24 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
         title="¿Salir de la App?"
         message="¿Estás seguro de que deseas cerrar la aplicación?"
       />
-      <header className="fixed top-0 left-0 right-0 h-16 bg-[#300050]/95 backdrop-blur-xl text-white flex items-center px-4 z-[200] border-b border-goldCofrade/20 shadow-lg justify-between">
-        <div className="w-10 flex justify-start">
+      <header className="fixed top-0 left-0 right-0 h-12 bg-white/95 dark:bg-[#1A1A1A]/95 backdrop-blur-xl text-gray-900 dark:text-white flex items-center px-3 z-[200] border-b border-gray-100 dark:border-white/5 justify-between">
+        <div className="w-8 flex justify-start">
           {!isRoot && (
-            <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-              <ChevronLeft size={22} className="text-goldCofrade" />
+            <button onClick={() => navigate(-1)} className="p-1.5 -ml-1 rounded-full transition-colors active:bg-gray-100 dark:active:bg-white/10">
+              <ChevronLeft size={20} className="text-gray-600 dark:text-gray-300" />
             </button>
           )}
         </div>
 
         <div className="flex-1 flex items-center justify-center overflow-hidden px-2">
-          <h1 className="font-cofrade text-xs sm:text-sm font-bold tracking-wider text-white uppercase text-center leading-tight">
+          <h1 className="text-sm font-semibold tracking-tight text-center leading-tight truncate">
             {headerTitle}
           </h1>
         </div>
 
-        <div className="w-10 flex justify-end items-center">
-          <button onClick={() => setShowExitConfirm(true)} className="p-2 hover:bg-white/10 rounded-full transition-colors opacity-90 hover:opacity-100" title="Salir de la App">
-            <Power size={18} className="text-red-400" />
+        <div className="w-8 flex justify-end items-center">
+          <button onClick={() => setShowExitConfirm(true)} className="p-1.5 rounded-full transition-colors active:bg-gray-100 dark:active:bg-white/10" title="Salir de la App">
+            <Power size={16} className="text-gray-400" />
           </button>
         </div>
       </header>
@@ -269,10 +273,10 @@ const DesktopSidebar = ({ isOffSeason, onToggleOffSeason }: { isOffSeason: boole
   const [toggling, setToggling] = useState(false);
 
   const getLinkStyle = (path: string) => `
-      flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 font-bold text-sm
+      flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-sm font-medium
       ${isActive(path)
-      ? 'bg-white text-[#4B0082] shadow-xl scale-105 ring-1 ring-[#D4AF37]/20'
-      : 'text-gray-300 hover:bg-white/10 hover:text-white'}
+      ? 'bg-[#4B0082] dark:bg-[#D4AF37] text-white dark:text-[#1A1A1A]'
+      : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}
       `;
 
   const handleToggleVisibility = async () => {
@@ -288,76 +292,68 @@ const DesktopSidebar = ({ isOffSeason, onToggleOffSeason }: { isOffSeason: boole
   };
 
   return (
-    <aside className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-72 bg-[#300050] flex-col shadow-[10px_0_40px_rgba(0,0,0,0.3)] border-r border-[#D4AF37]/20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]">
-      <div className="absolute inset-0 bg-gradient-to-b from-[#4B0082]/80 to-[#300050] pointer-events-none"></div>
-
-      <div className="relative z-10 p-10 pb-12">
-        <h1 className="font-cofrade text-4xl text-[#D4AF37] leading-none drop-shadow-md">
+    <aside className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-[#1A1A1A] flex-col border-r border-gray-100 dark:border-white/5">
+      <div className="p-8 pb-6">
+        <h1 className="text-2xl font-bold text-[#4B0082] dark:text-[#D4AF37] leading-tight">
           Ayamonte<br />
-          <span className="text-white text-xl tracking-[0.3em] font-sans font-light uppercase opacity-90">Cofrade</span>
+          <span className="text-sm text-gray-400 font-normal tracking-widest uppercase">Cofrade</span>
         </h1>
       </div>
 
-      <nav className="relative z-10 flex-1 px-6 space-y-3 overflow-y-auto no-scrollbar">
+      <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar">
         {!isOffSeason && (
           <>
-            <Link to="/" className={getLinkStyle('/')}><Home size={20} /> Inicio</Link>
-            <Link to="/calendar" className={getLinkStyle('/calendar')}><Calendar size={20} /> Agenda</Link>
-            <Link to="/news" className={getLinkStyle('/news')}><Newspaper size={20} /> Noticias</Link>
-            <div className="h-px bg-white/10 my-4 mx-2"></div>
+            <Link to="/" className={getLinkStyle('/')}><Home size={18} /> Inicio</Link>
+            <Link to="/calendar" className={getLinkStyle('/calendar')}><Calendar size={18} /> Agenda</Link>
+            <Link to="/news" className={getLinkStyle('/news')}><Newspaper size={18} /> Noticias</Link>
+            <div className="h-px bg-gray-100 dark:bg-white/5 my-3 mx-2"></div>
           </>
         )}
-        <Link to="/patrimony" className={getLinkStyle('/patrimony')}><Landmark size={20} /> Patrimonio</Link>
+        <Link to="/patrimony" className={getLinkStyle('/patrimony')}><Landmark size={18} /> Patrimonio</Link>
       </nav>
 
-      {/* Admin Controls Section */}
-      <div className="relative z-10 px-6 pb-4 border-t border-white/10 pt-4 space-y-3">
-        <p className="text-[9px] text-white/30 uppercase tracking-[0.25em] font-black px-2">Panel de Control</p>
+      <div className="px-4 pb-4 border-t border-gray-100 dark:border-white/5 pt-4 space-y-2">
+        <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold px-3">Panel de Control</p>
 
-        {/* Visibility Toggle */}
         <button
           onClick={handleToggleVisibility}
           disabled={toggling}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 ${
             isOffSeason
-              ? 'bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/20'
-              : 'bg-green-500/10 text-green-300 hover:bg-green-500/20 border border-green-500/20'
+              ? 'text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10'
+              : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-500/10'
           } ${toggling ? 'opacity-50 cursor-wait' : ''}`}
         >
           {isOffSeason ? <EyeOff size={16} /> : <Eye size={16} />}
           <div className="flex-1 text-left">
-            <span className="block uppercase tracking-wider text-[10px]">
+            <span className="block text-xs font-medium">
               {isOffSeason ? 'App Oculta' : 'App Visible'}
             </span>
-            <span className="block text-[9px] opacity-60 mt-0.5">
-              {isOffSeason ? 'Solo Patrimonio' : 'Contenido completo'}
-            </span>
           </div>
-          <div className={`w-9 h-5 rounded-full flex items-center transition-all duration-300 ${
-            isOffSeason ? 'bg-red-500/30 justify-start' : 'bg-green-500/30 justify-end'
+          <div className={`w-9 h-5 rounded-full flex items-center transition-all duration-200 ${
+            isOffSeason ? 'bg-red-500/20 justify-start' : 'bg-green-500/20 justify-end'
           }`}>
-            <div className={`w-4 h-4 rounded-full mx-0.5 transition-all duration-300 shadow-sm ${
+            <div className={`w-4 h-4 rounded-full mx-0.5 transition-all duration-200 shadow-sm ${
               isOffSeason ? 'bg-red-400' : 'bg-green-400'
             }`}></div>
           </div>
         </button>
 
-        {/* Admin Link */}
         <Link
           to="/admin"
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all duration-200 ${
             isActive('/admin')
-              ? 'bg-[#D4AF37] text-[#300050] shadow-lg'
-              : 'bg-white/5 text-white/70 hover:bg-white/10 hover:text-white border border-white/10'
+              ? 'bg-[#4B0082] text-white'
+              : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'
           }`}
         >
           <Settings size={16} />
-          <span className="uppercase tracking-wider text-[10px]">Administración</span>
+          <span>Administración</span>
         </Link>
       </div>
 
-      <div className="relative z-10 px-8 py-4 text-center border-t border-white/5">
-        <p className="text-[10px] text-white/40 uppercase tracking-[0.3em] font-black">Semana Santa 2025</p>
+      <div className="px-6 py-3 text-center border-t border-gray-100 dark:border-white/5">
+        <p className="text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest font-medium">Semana Santa 2025</p>
       </div>
     </aside>
   );
@@ -495,49 +491,57 @@ const AppContent = () => {
       {!isAdmin && <DesktopSidebar isOffSeason={isOffSeason} onToggleOffSeason={(val) => setIsOffSeason(val)} />}
       <MobileHeader soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} headerTitle={headerTitle} />
 
-      <main className={`flex-grow ${isAdmin ? '' : `lg:ml-72 ${isOffSeason ? 'pb-8' : 'pb-32'} pt-0 lg:pt-0`}`}>
-        <Routes>
-          <Route path="/" element={isOffSeason ? <Navigate to="/patrimony" replace /> : <PublicHome pasos={pasos} news={news} defaultCover="" departureStatus="" brotherhoods={brotherhoods} days={days} />} />
-          <Route path="/calendar" element={<CalendarPage pasos={pasos} days={days} brotherhoods={brotherhoods} />} />
-          <Route path="/paso/:id" element={<PasoDetailPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
-          <Route path="/brotherhood/:name" element={<BrotherhoodPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
-          <Route path="/news" element={<NewsPage news={news} />} />
-          <Route path="/patrimony" element={<PatrimonyPage temples={temples} posters={posters} />} />
-          <Route path="/map/:id" element={<MapPage pasos={pasos} brotherhoods={brotherhoods} />} />
-          <Route path="/assistant" element={<AIAssistant brotherhoods={brotherhoods} pasos={pasos} days={days} />} />
-          <Route path="/admin/*" element={<AdminDashboard updatePasos={fetchData} updateNews={fetchData} temples={temples} updateTemples={fetchData} updateBands={fetchData} updateDays={fetchData} days={days} />} />
-        </Routes>
+      <main className={`flex-grow ${isAdmin ? '' : `lg:ml-72 pt-12 pb-16 md:pb-0`}`}>
+        <PageTransition>
+          <Routes>
+            <Route path="/" element={isOffSeason ? <Navigate to="/patrimony" replace /> : <PublicHome pasos={pasos} news={news} defaultCover="" departureStatus="" brotherhoods={brotherhoods} days={days} />} />
+            <Route path="/calendar" element={<CalendarPage pasos={pasos} days={days} brotherhoods={brotherhoods} />} />
+            <Route path="/paso/:id" element={<PasoDetailPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
+            <Route path="/brotherhood/:name" element={<BrotherhoodPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
+            <Route path="/news" element={<NewsPage news={news} />} />
+            <Route path="/patrimony" element={<PatrimonyPage temples={temples} posters={posters} />} />
+            <Route path="/map/:id" element={<MapPage pasos={pasos} brotherhoods={brotherhoods} />} />
+            <Route path="/assistant" element={<AIAssistant brotherhoods={brotherhoods} pasos={pasos} days={days} />} />
+            <Route path="/admin/*" element={<AdminDashboard updatePasos={fetchData} updateNews={fetchData} temples={temples} updateTemples={fetchData} updateBands={fetchData} updateDays={fetchData} days={days} />} />
+          </Routes>
+        </PageTransition>
       </main>
 
-      {!isAdmin && !isOffSeason && (
-        <nav className="fixed bottom-6 left-4 right-4 bg-[#300050]/95 backdrop-blur-2xl border border-white/10 h-20 rounded-[32px] flex items-center justify-around z-[200] md:hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-          <Link to="/" className={`flex flex-col items-center gap-1 transition-all duration-300 ${location.pathname === '/' ? 'text-goldCofrade scale-110' : 'text-gray-400 hover:text-white'}`}>
-            <div className={`p-2 rounded-xl ${location.pathname === '/' ? 'bg-goldCofrade/10' : ''}`}>
-              <Home size={22} strokeWidth={location.pathname === '/' ? 2.5 : 2} />
-            </div>
-            <span className="text-[9px] uppercase font-black tracking-tighter">Inicio</span>
-          </Link>
+      {!isAdmin && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-[#1A1A1A]/95 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 h-16 flex items-center justify-around z-[200] md:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+          {isOffSeason ? (
+            <Link to="/patrimony" className={`flex flex-col items-center gap-0.5 w-16 py-1 transition-colors duration-200 relative ${location.pathname === '/patrimony' ? 'text-[#4B0082] dark:text-[#D4AF37]' : 'text-gray-400'}`}>
+              {location.pathname === '/patrimony' && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#4B0082] dark:bg-[#D4AF37] rounded-full"></span>}
+              <Landmark size={22} strokeWidth={location.pathname === '/patrimony' ? 2.5 : 1.5} />
+              <span className="text-[10px] font-semibold">Patrimonio</span>
+            </Link>
+          ) : (
+            <>
+              <Link to="/" className={`flex flex-col items-center gap-0.5 w-16 py-1 transition-colors duration-200 relative ${location.pathname === '/' ? 'text-[#4B0082] dark:text-[#D4AF37]' : 'text-gray-400'}`}>
+                {location.pathname === '/' && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#4B0082] dark:bg-[#D4AF37] rounded-full"></span>}
+                <Home size={22} strokeWidth={location.pathname === '/' ? 2.5 : 1.5} />
+                <span className="text-[10px] font-semibold">Inicio</span>
+              </Link>
 
-          <Link to="/calendar" className={`flex flex-col items-center gap-1 transition-all duration-300 ${location.pathname === '/calendar' ? 'text-goldCofrade scale-110' : 'text-gray-400 hover:text-white'}`}>
-            <div className={`p-2 rounded-xl ${location.pathname === '/calendar' ? 'bg-goldCofrade/10' : ''}`}>
-              <Calendar size={22} strokeWidth={location.pathname === '/calendar' ? 2.5 : 2} />
-            </div>
-            <span className="text-[9px] uppercase font-black tracking-tighter">Agenda</span>
-          </Link>
+              <Link to="/calendar" className={`flex flex-col items-center gap-0.5 w-16 py-1 transition-colors duration-200 relative ${location.pathname === '/calendar' ? 'text-[#4B0082] dark:text-[#D4AF37]' : 'text-gray-400'}`}>
+                {location.pathname === '/calendar' && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#4B0082] dark:bg-[#D4AF37] rounded-full"></span>}
+                <Calendar size={22} strokeWidth={location.pathname === '/calendar' ? 2.5 : 1.5} />
+                <span className="text-[10px] font-semibold">Agenda</span>
+              </Link>
 
-          <Link to="/news" className={`flex flex-col items-center gap-1 transition-all duration-300 ${location.pathname === '/news' ? 'text-goldCofrade scale-110' : 'text-gray-400 hover:text-white'}`}>
-            <div className={`p-2 rounded-xl ${location.pathname === '/news' ? 'bg-goldCofrade/10' : ''}`}>
-              <Newspaper size={22} strokeWidth={location.pathname === '/news' ? 2.5 : 2} />
-            </div>
-            <span className="text-[9px] uppercase font-black tracking-tighter">Noticias</span>
-          </Link>
+              <Link to="/news" className={`flex flex-col items-center gap-0.5 w-16 py-1 transition-colors duration-200 relative ${location.pathname === '/news' ? 'text-[#4B0082] dark:text-[#D4AF37]' : 'text-gray-400'}`}>
+                {location.pathname === '/news' && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#4B0082] dark:bg-[#D4AF37] rounded-full"></span>}
+                <Newspaper size={22} strokeWidth={location.pathname === '/news' ? 2.5 : 1.5} />
+                <span className="text-[10px] font-semibold">Noticias</span>
+              </Link>
 
-          <Link to="/patrimony" className={`flex flex-col items-center gap-1 transition-all duration-300 ${location.pathname === '/patrimony' ? 'text-goldCofrade scale-110' : 'text-gray-400 hover:text-white'}`}>
-            <div className={`p-2 rounded-xl ${location.pathname === '/patrimony' ? 'bg-goldCofrade/10' : ''}`}>
-              <Landmark size={22} strokeWidth={location.pathname === '/patrimony' ? 2.5 : 2} />
-            </div>
-            <span className="text-[9px] uppercase font-black tracking-tighter">Patrimonio</span>
-          </Link>
+              <Link to="/patrimony" className={`flex flex-col items-center gap-0.5 w-16 py-1 transition-colors duration-200 relative ${location.pathname === '/patrimony' ? 'text-[#4B0082] dark:text-[#D4AF37]' : 'text-gray-400'}`}>
+                {location.pathname === '/patrimony' && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-5 h-0.5 bg-[#4B0082] dark:bg-[#D4AF37] rounded-full"></span>}
+                <Landmark size={22} strokeWidth={location.pathname === '/patrimony' ? 2.5 : 1.5} />
+                <span className="text-[10px] font-semibold">Patrimonio</span>
+              </Link>
+            </>
+          )}
         </nav>
       )}
     </div>
@@ -546,6 +550,7 @@ const AppContent = () => {
 
 import ScrollToTop from './components/ScrollToTop';
 import InstallPWA from './components/InstallPWA';
+import PageTransition from './components/PageTransition';
 
 const App = () => (
   <HashRouter>

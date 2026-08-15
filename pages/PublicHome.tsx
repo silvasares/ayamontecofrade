@@ -656,17 +656,17 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
           </section>
         )}
 
-        {/* ACCESOS RÁPIDOS (Grid Minimalista) */}
+        {/* ACCESOS RÁPIDOS */}
         <section>
-          <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Menú</h3>
+          <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-3">Menú</h3>
           <div className="grid grid-cols-2 gap-3">
-            <Link to="/assistant" className="bg-white dark:bg-[#1E1E1E] p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col justify-between h-28 group hover:border-[#D4AF37]/30 transition-all">
-              <div className="bg-purple-50 dark:bg-purple-900/20 w-8 h-8 rounded-full flex items-center justify-center text-[#4B0082] dark:text-[#D4AF37] mb-2">
-                <Bot size={16} />
+            <Link to="/assistant" className="bg-gray-50 dark:bg-[#1E1E1E] p-4 rounded-2xl flex flex-col justify-between h-24 active:bg-gray-100 dark:active:bg-white/5 transition-colors">
+              <div className="w-9 h-9 rounded-xl bg-[#4B0082]/10 dark:bg-[#D4AF37]/10 flex items-center justify-center text-[#4B0082] dark:text-[#D4AF37]">
+                <Bot size={18} />
               </div>
               <div>
-                <h4 className="font-medium text-gray-900 dark:text-white text-sm leading-none mb-1">Asistente IA</h4>
-                <p className="text-[9px] text-gray-400 font-medium">Pregunta tus dudas</p>
+                <h4 className="font-medium text-gray-900 dark:text-white text-sm">Asistente IA</h4>
+                <p className="text-xs text-gray-400">Pregunta tus dudas</p>
               </div>
             </Link>
 
@@ -674,10 +674,9 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
               onClick={async () => {
                 const shareData = {
                   title: 'Ayamonte Cofrade',
-                  text: '¡Descubre la Semana Santa de Ayamonte con esta App! 🕯️💜',
+                  text: '¡Descubre la Semana Santa de Ayamonte con esta App!',
                   url: window.location.origin
                 };
-
                 try {
                   if (navigator.share && navigator.canShare(shareData)) {
                     await navigator.share(shareData);
@@ -685,53 +684,47 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
                     throw new Error("Share not supported");
                   }
                 } catch (e) {
-                  // Fallback: En WebViews muy restrictivas, lo mejor es copiar y avisar.
-                  // Evitamos abrir URLs externas que pueden causar cierres inesperados.
                   navigator.clipboard.writeText(shareData.text + ' ' + shareData.url);
-                  alert("Enlace copiado al portapapeles. Pégalo en WhatsApp.");
+                  alert("Enlace copiado al portapapelos.");
                 }
               }}
-              className="bg-[#4B0082] p-4 rounded-2xl shadow-md flex flex-col justify-between h-28 relative overflow-hidden text-white group cursor-pointer hover:scale-[1.02] transition-transform active:scale-95"
+              className="bg-gray-50 dark:bg-[#1E1E1E] p-4 rounded-2xl flex flex-col justify-between h-24 active:bg-gray-100 dark:active:bg-white/5 transition-colors"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/20"></div>
-              <div className="bg-[#D4AF37] w-8 h-8 rounded-full flex items-center justify-center text-[#300050] mb-2 relative z-10 shadow-sm">
-                <Share2 size={16} />
+              <div className="w-9 h-9 rounded-xl bg-[#4B0082] dark:bg-[#D4AF37] flex items-center justify-center text-white dark:text-[#1A1A1A]">
+                <Share2 size={18} />
               </div>
-              <div className="relative z-10">
-                <h4 className="font-medium text-white text-sm leading-none mb-1">Compartir</h4>
-                <p className="text-[9px] text-purple-200 font-medium">Invita a amigos</p>
+              <div>
+                <h4 className="font-medium text-gray-900 dark:text-white text-sm">Compartir</h4>
+                <p className="text-xs text-gray-400">Invita a amigos</p>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ÚLTIMAS NOTICIAS (Estilo Editorial) */}
+        {/* ÚLTIMAS NOTICIAS */}
         <section>
-          <div className="flex justify-between items-end mb-3 px-1">
-            <h3 className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em]">Crónicas</h3>
+          <div className="flex justify-between items-end mb-3">
+            <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Crónicas</h3>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2">
             {visibleNews.map(item => (
-              <Link to="/news" state={{ scrollToId: item.id }} key={item.id} className="bg-white dark:bg-[#1E1E1E] p-3 rounded-2xl flex gap-3 border border-gray-100 dark:border-gray-800 shadow-sm active:scale-[0.99] transition-transform">
+              <Link to="/news" state={{ scrollToId: item.id }} key={item.id} className="bg-gray-50 dark:bg-[#1E1E1E] p-3 rounded-2xl flex gap-3 active:bg-gray-100 dark:active:bg-white/5 transition-colors">
                 <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-gray-100"><img src={item.image} className="w-full h-full object-cover" alt={item.title} /></div>
                 <div className="flex flex-col justify-center min-w-0 py-0.5">
-                  <span className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1">
+                  <span className="text-[10px] font-medium text-gray-400 mb-1">
                     {formatDate(item.publishedAt)}
                   </span>
-                  <h4 className="font-serif font-medium text-gray-900 dark:text-white leading-tight line-clamp-2 text-xs mb-1">{item.title}</h4>
-                  <div className="flex items-center justify-between mt-auto">
-                    <span className="text-[9px] text-[#4B0082] dark:text-[#D4AF37] font-bold">Leer noticia</span>
-                    {item.link && <ExternalLink size={10} className="text-gray-400" />}
-                  </div>
+                  <h4 className="font-medium text-gray-900 dark:text-white leading-snug line-clamp-2 text-sm">{item.title}</h4>
+                  <span className="text-xs text-[#4B0082] dark:text-[#D4AF37] font-medium mt-1">Leer más</span>
                 </div>
               </Link>
             ))}
           </div>
           <Link
             to="/news"
-            className="w-full mt-4 flex items-center justify-center gap-2 bg-white dark:bg-[#1E1E1E] py-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 text-[10px] font-black uppercase tracking-widest text-[#4B0082] dark:text-[#D4AF37] active:scale-[0.98] transition-all"
+            className="w-full mt-4 flex items-center justify-center gap-2 bg-gray-50 dark:bg-[#1E1E1E] py-3.5 rounded-2xl text-sm font-medium text-[#4B0082] dark:text-[#D4AF37] active:bg-gray-100 dark:active:bg-white/5 transition-colors"
           >
-            Ver más noticias <Newspaper size={14} />
+            Ver más noticias <Newspaper size={16} />
           </Link>
         </section>
 
