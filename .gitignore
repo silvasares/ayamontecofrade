@@ -10,7 +10,12 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+
+# Environment variables & secrets
+.env
+.env.*
 *.local
+!.env.example
 
 # Editor directories and files
 .vscode/*
@@ -22,3 +27,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Test & temporary files with credentials
+test-*.mjs
+list-models.mjs
+temp_*
+[full_path_of_file_*]
