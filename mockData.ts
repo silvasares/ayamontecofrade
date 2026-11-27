@@ -158,7 +158,7 @@ export const PASOS: Paso[] = [
 export const NEWS: News[] = [
   {
     id: 'news-1',
-    title: 'Nuevos itinerarios confirmados para 2025',
+    title: 'Nuevos itinerarios confirmados para 2027',
     content: 'La Agrupación de Cofradías ha anunciado cambios ligeros en los recorridos de este año para mejorar la fluidez y seguridad de los cargadores y el público en las calles estrechas del centro histórico.',
     // Required property published_at added
     published_at: '2024-03-10',
