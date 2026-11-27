@@ -123,7 +123,16 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (posterItems) setPosters(posterItems);
 
       const { data: settingsData } = await supabase.from('app_settings').select('value').eq('key', 'header_title').single();
-      if (settingsData) setHeaderTitle(settingsData.value);
+      if (settingsData) {
+        let title = settingsData.value;
+        if (title && title.includes('2026')) {
+          title = title.replace('2026', '2027');
+          await supabase.from('app_settings').upsert({ key: 'header_title', value: title });
+        }
+        setHeaderTitle(title);
+      } else {
+        setHeaderTitle('AYAMONTE COFRADE 2027');
+      }
 
       const { data: offSeasonData } = await supabase.from('app_settings').select('value').eq('key', 'off_season').maybeSingle();
       if (offSeasonData) {
