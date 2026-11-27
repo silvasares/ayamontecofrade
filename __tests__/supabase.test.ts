@@ -109,7 +109,7 @@ describe('MockQuery', () => {
     await q.insert([{ name: 'test1' }, { name: 'test2' }]);
 
     const q2 = new TestMockQuery('test_table');
-    const result = await new Promise(resolve => q2.select().then(resolve));
+    const result = await new Promise<any>(resolve => q2.select().then(resolve));
     expect(result.error).toBeNull();
     expect(result.data).toHaveLength(2);
     expect(result.data[0].name).toBe('test1');
@@ -124,7 +124,7 @@ describe('MockQuery', () => {
     ]);
 
     const q2 = new TestMockQuery('hermandades');
-    const result = await new Promise(resolve => q2.select().eq('day', 'Lunes Santo').then(resolve));
+    const result = await new Promise<any>(resolve => q2.select().eq('day', 'Lunes Santo').then(resolve));
     expect(result.data).toHaveLength(2);
     expect(result.data.every((h: any) => h.day === 'Lunes Santo')).toBe(true);
   });
@@ -134,11 +134,11 @@ describe('MockQuery', () => {
     await q.insert([{ id: '123', name: 'original' }]);
 
     const q2 = new TestMockQuery('items');
-    const updateResult = await new Promise(resolve => q2.update({ name: 'updated' }).eq('id', '123').then(resolve));
+    const updateResult = await new Promise<any>(resolve => q2.update({ name: 'updated' }).eq('id', '123').then(resolve));
     expect(updateResult.error).toBeNull();
 
     const q3 = new TestMockQuery('items');
-    const { data } = await new Promise(resolve => q3.select().eq('id', '123').then(resolve));
+    const { data } = await new Promise<any>(resolve => q3.select().eq('id', '123').then(resolve));
     expect(data[0].name).toBe('updated');
   });
 
@@ -147,10 +147,10 @@ describe('MockQuery', () => {
     await q.insert([{ id: 'a1' }, { id: 'a2' }]);
 
     const q2 = new TestMockQuery('deleteme');
-    await new Promise(resolve => q2.delete().eq('id', 'a1').then(resolve));
+    await new Promise<any>(resolve => q2.delete().eq('id', 'a1').then(resolve));
 
     const q3 = new TestMockQuery('deleteme');
-    const { data } = await new Promise(resolve => q3.select().then(resolve));
+    const { data } = await new Promise<any>(resolve => q3.select().then(resolve));
     expect(data).toHaveLength(1);
     expect(data[0].id).toBe('a2');
   });
@@ -164,7 +164,7 @@ describe('MockQuery', () => {
     ]);
 
     const q2 = new TestMockQuery('multi');
-    const { data } = await new Promise(resolve =>
+    const { data } = await new Promise<any>(resolve =>
       q2.select().eq('day', 'Lunes').eq('status', 'active').then(resolve)
     );
     expect(data).toHaveLength(1);

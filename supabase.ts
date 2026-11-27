@@ -42,9 +42,25 @@ class MockQuery {
 
     async insert(payload: any[]) {
         const data = getLocalData(this.table);
-        const newData = [...data, ...payload.map(item => ({ ...item, id: Math.random().toString(36).substr(2, 9) }))];
+        const newData = [...data, ...payload.map(item => ({ ...item, id: item.id || Math.random().toString(36).substr(2, 9) }))];
         setLocalData(this.table, newData);
         return { error: null };
+    }
+
+    async upsert(payload: any) {
+        const data = getLocalData(this.table);
+        const items = Array.isArray(payload) ? payload : [payload];
+        const updated = [...data];
+        for (const item of items) {
+            const idx = updated.findIndex((d: any) => d.key === item.key || d.id === item.id);
+            if (idx >= 0) {
+                updated[idx] = { ...updated[idx], ...item };
+            } else {
+                updated.push({ ...item, id: item.id || Math.random().toString(36).substr(2, 9) });
+            }
+        }
+        setLocalData(this.table, updated);
+        return { data: null, error: null };
     }
 
     update(payload: any) {
@@ -76,25 +92,20 @@ class MockQuery {
             }
         }
 
-        if (updateAction) {
-            if (eqFilters.length > 0) {
-                data = data.map((item: any) => {
-                    let match = true;
-                    for (const filter of eqFilters) {
-                        if (item[filter.column] !== filter.value) { match = false; break; }
-                    }
-                    return match ? { ...item, ...updateAction.payload } : item;
-                });
-                setLocalData(this.table, data);
-            }
-        } else if (deleteAction) {
-            if (eqFilters.length > 0) {
-                const fullData = getLocalData(this.table);
-                const idsToRemove = new Set(data.map((item: any) => item.id));
-                const filtered = fullData.filter((item: any) => !idsToRemove.has(item.id));
-                setLocalData(this.table, filtered);
-                data = filtered;
-            }
+        if (updateAction && eqFilters.length > 0) {
+            const fullData = getLocalData(this.table);
+            const idsToUpdate = new Set(data.map((item: any) => item.id));
+            const updated = fullData.map((item: any) =>
+                idsToUpdate.has(item.id) ? { ...item, ...updateAction.payload } : item
+            );
+            setLocalData(this.table, updated);
+            data = updated.filter((item: any) => idsToUpdate.has(item.id));
+        } else if (deleteAction && eqFilters.length > 0) {
+            const fullData = getLocalData(this.table);
+            const idsToRemove = new Set(data.map((item: any) => item.id));
+            const filtered = fullData.filter((item: any) => !idsToRemove.has(item.id));
+            setLocalData(this.table, filtered);
+            data = filtered;
         }
 
         resolve({ data, error: null });
@@ -105,6 +116,13 @@ export const supabase = (supabaseUrl && supabaseKey)
     ? createClient(supabaseUrl, supabaseKey)
     : {
         from: (table: string) => new MockQuery(table),
+        rpc: async (fn: string, _params?: any) => {
+            if (fn === 'increment_visit_count') {
+                const count = parseInt(localStorage.getItem('ac_mock_visit_count') || '0', 10);
+                localStorage.setItem('ac_mock_visit_count', String(count + 1));
+            }
+            return { data: null, error: null };
+        },
         auth: {
             onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
             getSession: () => Promise.resolve({ data: { session: null }, error: null }),

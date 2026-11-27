@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Clock, ChevronRight, Bot, X, ExternalLink, Calendar, Newspaper, Map as MapIcon, Sparkles, AlertCircle, Bell, ShieldCheck, Lock, Navigation, CloudSun, Search, CloudRain, Check, Share2 } from 'lucide-react';
 import { getAyamonteWeather } from '../services/weatherService';
 import { WeatherData, Paso, Day, Brotherhood, DaySchedule } from '../types';
+import { useAppData } from '../context/AppDataContext';
+import { computeActiveNextPasos } from '../utils/schedule';
 
 interface Props {
   pasos: Paso[];
@@ -89,7 +91,10 @@ const isSameDate = (date1: Date, dateStr?: string) => {
     date1.getDate() === d2.getDate();
 };
 
-const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatus, brotherhoods, days }) => {
+const PublicHome: React.FC<Props> = () => {
+  const { pasos, news, brotherhoods, days } = useAppData();
+  const defaultCover = '';
+  const departureStatus = '';
   const [forecast, setForecast] = useState<WeatherData[]>([]);
   const [loadingWeather, setLoadingWeather] = useState(true);
   const [now, setNow] = useState(getSpainTime());
@@ -189,179 +194,7 @@ const PublicHome: React.FC<Props> = ({ pasos, news, defaultCover, departureStatu
       .slice(0, 4);
   }, [news, now]);
 
-  const { activePasos, nextPaso } = useMemo(() => {
-    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const getOrderIndex = (dayName: string): number => {
-      // 1. Intentar buscar en 'days' (DB)
-      if (days && days.length > 0) {
-        const d = days.find(day => day.name === dayName);
-        if (d) return d.order_index;
-      }
-
-      // 2. Fallback mapa estático
-      const map: Record<string, number> = {
-        [Day.VIERNES_DOLORES]: 0,
-        [Day.SABADO_PASION]: 1,
-        [Day.DOMINGO_RAMOS]: 2,
-        [Day.LUNES_SANTO]: 3,
-        [Day.MARTES_SANTO]: 4,
-        [Day.MIERCOLES_SANTO]: 5,
-        [Day.JUEVES_SANTO]: 6,
-        [Day.MADRUGA]: 7,
-        [Day.VIERNES_SANTO]: 8,
-        [Day.SABADO_SANTO]: 9,
-        [Day.DOMINGO_RESURRECCION]: 10
-      };
-      return map[dayName] ?? 99; // 99 para días desconocidos (final de la lista)
-    };
-
-    // Determinar si HOY es un día de procesión específico
-    let currentOrderIndex = -1;
-    // 1. Buscamos coincidencia exacta de fecha
-    if (days && days.length > 0) {
-      const todaySchedule = days.find(d => d.date && isSameDate(now, d.date));
-      if (todaySchedule) {
-        currentOrderIndex = todaySchedule.order_index;
-      }
-    }
-
-    // 2. Si no hay fecha exacta configurada, intentamos inferir por día de la semana (fallback débil)
-    // Solo si estamos "cerca" de Semana Santa o asumiendo que estamos en ella si se usa la app
-    if (currentOrderIndex === -1 && (!days || days.every(d => !d.date))) {
-      // Mapa reverso básico solo para días únicos (Lunes-Jueves y Sábado)
-      // Domingo y Viernes son ambiguos (Dolores/Santo/Resurrección), se asume el primero por defecto si no hay fechas
-      const dayOfWeek = now.getDay(); // 0 Dom, 1 Lun...
-      const weekMap: Record<number, number> = {
-        1: 3, // Lunes Santo
-        2: 4, // Martes Santo
-        3: 5, // Miercoles Santo
-        4: 6, // Jueves Santo (o Madrugá noche)
-        6: 9, // Sábado Santo (o Pasión - ambigüedad)
-      };
-      if (weekMap[dayOfWeek] !== undefined) {
-        currentOrderIndex = weekMap[dayOfWeek];
-      }
-    }
-
-    const active = pasos.filter(p => {
-      // 1. Priority: Manual override on Paso
-      if (p.eventDate) {
-        const isToday = isSameDate(now, p.eventDate);
-        const start = getMinutes(p.startTime);
-        const end = getMinutes(p.arrivalTime);
-        const crossesMidnight = end < start;
-
-        if (isToday) {
-          if (crossesMidnight) return currentMinutes >= start;
-          return currentMinutes >= start && currentMinutes < end;
-        }
-        const yesterday = new Date(now);
-        yesterday.setDate(yesterday.getDate() - 1);
-        if (isSameDate(yesterday, p.eventDate) && crossesMidnight) {
-          return currentMinutes < end;
-        }
-        return false;
-      }
-
-      const realDayName = getPasoDay(p);
-
-      // 2. Check if the DaySchedule has a specific date assigned
-      if (days && days.length > 0) {
-        const daySchedule = days.find(d => d.name === realDayName);
-        if (daySchedule && daySchedule.date) {
-          const isToday = isSameDate(now, daySchedule.date);
-          const start = getMinutes(p.startTime);
-          const end = getMinutes(p.arrivalTime);
-          const crossesMidnight = end < start;
-
-          if (isToday) {
-            if (crossesMidnight) return currentMinutes >= start;
-            return currentMinutes >= start && currentMinutes < end;
-          }
-
-          // Handle "Madrugá" or overlapping
-          const yesterday = new Date(now);
-          yesterday.setDate(yesterday.getDate() - 1);
-          const isYesterdayEvent = isSameDate(yesterday, daySchedule.date);
-
-          if (isYesterdayEvent && crossesMidnight) {
-            return currentMinutes < end;
-          }
-          return false;
-        }
-      }
-
-      // 3. Fallback: Day Index match (Standard weekly schedule)
-      const pDayIdx = getDayIndex(realDayName);
-      const currentDayIdx = now.getDay();
-      if (pDayIdx !== currentDayIdx) return false;
-
-      const start = getMinutes(p.startTime);
-      const end = getMinutes(p.arrivalTime);
-      if (start === -1 || end === -1) return false;
-      if (end < start) return currentMinutes >= start || currentMinutes < end;
-      else return currentMinutes >= start && currentMinutes < end;
-    });
-
-    let candidates = pasos.filter(p => !active.find(a => a.id === p.id));
-
-    candidates.sort((a, b) => {
-      const dayNameA = getPasoDay(a);
-      const dayNameB = getPasoDay(b);
-      const idxA = getOrderIndex(dayNameA);
-      const idxB = getOrderIndex(dayNameB);
-
-      if (idxA !== idxB) {
-        // Si HOY es un día de procesión identificado:
-        // Los días con índice < hoy ya pasaron (se van al final -> next year weights)
-        // Los días con índice > hoy son futuro cercano (weight 0)
-
-        let weightA = 0;
-        let weightB = 0;
-
-        if (currentOrderIndex !== -1) {
-          if (idxA < currentOrderIndex) weightA = 1000;
-          if (idxB < currentOrderIndex) weightB = 1000;
-        } else {
-          // Si hoy NO es un día de procesión, hay que saber si estamos ANTES o DESPUÉS de todo
-          // Usamos la fecha del primer día como referencia si existe
-          const firstDay = days?.find(d => d.order_index === 0);
-          if (firstDay && firstDay.date) {
-            const firstDate = new Date(firstDay.date);
-            // Si hoy es después del inicio (y no coincidió con ningún día), asumimos que estamos POST-Semana Santa o en huecos
-            // Si estamos antes, el orden natural (0,1,2...) es correcto.
-            // Si estamos después (ej. Mayo), todo es futuro (próximo año), orden natural ok.
-            // Simplificación: Orden natural siempre gana si no estamos "dentro" de la semana.
-          }
-        }
-
-        return (idxA + weightA) - (idxB + weightB);
-      }
-
-      // Si es el Mismo Día (mismo OrderIndex)
-      const startA = getMinutes(a.startTime);
-      const startB = getMinutes(b.startTime);
-
-      // Si es HOY (y no está activo porque está en candidates):
-      // Puede ser que no haya empezado (Futuro Hoy) o que ya haya terminado (Pasado Hoy -> Next Year)
-      if (idxA === currentOrderIndex) {
-        const passedA = startA < currentMinutes; // Ya pasó la hora de salida
-        const passedB = startB < currentMinutes;
-
-        // Priorizar los que NO han pasado (Futuro Hoy) sobre los que sí (Pasado Hoy)
-        if (passedA && !passedB) return 1; // A ya pasó, B no -> B va antes
-        if (!passedA && passedB) return -1; // A no pasó, B si -> A va antes
-
-        // Si ambos pasaron o ambos son futuros, orden cronológico
-        return startA - startB;
-      }
-
-      // Días distintos a hoy: orden cronológico simple
-      return startA - startB;
-    });
-
-    return { activePasos: active, nextPaso: candidates[0] || null };
-  }, [pasos, now, brotherhoods, days]);
+  const { activePasos, nextPaso } = useMemo(() => computeActiveNextPasos(pasos, brotherhoods, days, now), [pasos, now, brotherhoods, days]);
 
   return (
     <div className="animate-in fade-in duration-700 max-w-full overflow-x-hidden flex flex-col bg-[#F8F9FA] dark:bg-[#0A0A0A]">

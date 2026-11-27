@@ -41,7 +41,7 @@ export const PASOS: Paso[] = [
     description: 'La Virgen de los Dolores procesiona de forma solemne abriendo la Semana de Pasión en Ayamonte.',
     history: 'Una de las imágenes más queridas que recorre las calles en un silencio sobrecogedor.',
     // Added to Paso type in types.ts
-    foundationYear: '1750',
+    foundation_year: '1750',
     mainImage: 'https://images.unsplash.com/photo-1594903337920-56956f4f2c01?q=80&w=800',
     gallery: ['https://picsum.photos/seed/dolores1/400/400'],
     temple_id: 'temple-1',
@@ -72,7 +72,7 @@ export const PASOS: Paso[] = [
     description: 'Representa la entrada triunfal de Jesús en Jerusalén a lomos de una borriquita.',
     history: 'La hermandad fue fundada a principios del siglo XX por un grupo de entusiastas locales.',
     // Added to Paso type in types.ts
-    foundationYear: '1918',
+    foundation_year: '1918',
     mainImage: 'https://images.unsplash.com/photo-1507421300302-36e693192004?q=80&w=800',
     gallery: ['https://picsum.photos/seed/mulita1/400/400', 'https://picsum.photos/seed/mulita2/400/400'],
     temple_id: 'temple-2',
@@ -95,7 +95,7 @@ export const PASOS: Paso[] = [
     description: 'Impresionante talla de Jesús maniatado, solo ante su destino.',
     history: 'Una de las devociones más populares de Ayamonte.',
     // Added to Paso type in types.ts
-    foundationYear: '1947',
+    foundation_year: '1947',
     mainImage: 'https://images.unsplash.com/photo-1473177104440-9b6348f07022?q=80&w=800',
     gallery: ['https://picsum.photos/seed/cautivo1/400/400'],
     temple_id: 'temple-1',
@@ -118,7 +118,7 @@ export const PASOS: Paso[] = [
     description: 'El Señor de Ayamonte. Procesiona en la madrugada del Viernes Santo cargado por sus devotos.',
     history: 'Imagen icónica de la ciudad, centro de la fe ayamontina.',
     // Added to Paso type in types.ts
-    foundationYear: '1590',
+    foundation_year: '1590',
     mainImage: 'https://images.unsplash.com/photo-1501393152198-34b240415948?q=80&w=800',
     gallery: [],
     temple_id: 'temple-1',
@@ -139,7 +139,7 @@ export const PASOS: Paso[] = [
     description: 'Representa la victoria sobre la muerte.',
     history: 'Punto final y glorioso de la Semana Santa.',
     // Added to Paso type in types.ts
-    foundationYear: '1990',
+    foundation_year: '1990',
     mainImage: 'https://images.unsplash.com/photo-1544427920-c49ccfb85579?q=80&w=800',
     gallery: [],
     temple_id: 'temple-1',

@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, User, Sparkles, History, MapPin, ExternalLink, Info } from 'lucide-react';
-import { askCofradeAssistant } from '../services/geminiService';
+import { askCofradeAssistant } from '../services/aiService';
 import { useLocation } from 'react-router-dom';
 
 interface Message {
@@ -11,6 +11,7 @@ interface Message {
 }
 
 import { Brotherhood, Paso, DaySchedule } from '../types';
+import { useAppData } from '../context/AppDataContext';
 
 interface Props {
   brotherhoods?: Brotherhood[];
@@ -18,7 +19,11 @@ interface Props {
   days?: DaySchedule[];
 }
 
-const AIAssistant: React.FC<Props> = ({ brotherhoods = [], pasos = [], days = [] }) => {
+const AIAssistant: React.FC<Props> = (props) => {
+  const ctx = useAppData();
+  const brotherhoods = props.brotherhoods ?? ctx.brotherhoods;
+  const pasos = props.pasos ?? ctx.pasos;
+  const days = props.days ?? ctx.days;
   const location = useLocation();
   const [messages, setMessages] = useState<Message[]>([
     {

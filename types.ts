@@ -51,7 +51,9 @@ export interface Paso {
   description: string;
   history: string;
   foundation_year?: string;
+  foundationYear?: string;
   main_image?: string;
+  mainImage?: string;
   gallery: string[];
   temple_id: string;
   vestry?: string;

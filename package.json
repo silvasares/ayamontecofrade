@@ -8,10 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:ai": "node check-ai.mjs"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.90.1",
     "lucide-react": "^0.474.0",
     "react": "^19.2.3",

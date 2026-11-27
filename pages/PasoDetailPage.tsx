@@ -7,6 +7,7 @@ import {
     Image as ImageIcon, X, ExternalLink, Sparkles, Flower, Shirt
 } from 'lucide-react';
 import { Paso, Temple, Band, Brotherhood } from '../types';
+import { useAppData } from '../context/AppDataContext';
 
 interface Props {
     pasos: Paso[];
@@ -15,7 +16,8 @@ interface Props {
     brotherhoods: Brotherhood[];
 }
 
-const PasoDetailPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods }) => {
+const PasoDetailPage: React.FC<Props> = () => {
+  const { pasos, temples, bands, brotherhoods } = useAppData();
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
 
@@ -71,17 +73,23 @@ const PasoDetailPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods }
 
             {selectedGalleryImage && (
                 <div
-                    className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-300"
+                    className="fixed inset-0 z-[1000] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4"
                     onClick={() => setSelectedGalleryImage(null)}
                 >
-                    <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-all scale-125">
+                    <button
+                        onClick={() => setSelectedGalleryImage(null)}
+                        className="absolute top-8 right-8 text-white/50 hover:text-white transition-all z-10"
+                    >
                         <X size={32} />
                     </button>
                     <img
                         src={selectedGalleryImage}
-                        className="max-w-full max-h-screen object-contain rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.8)] animate-in zoom-in duration-300"
+                        className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-[0_0_80px_rgba(0,0,0,0.8)]"
                         onClick={(e) => e.stopPropagation()}
                         alt="Vista ampliada"
+                        onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                        }}
                     />
                 </div>
             )}

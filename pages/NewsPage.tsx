@@ -4,6 +4,7 @@ import { Calendar, ChevronRight, Send, User, MessageSquare, Phone, X, CheckCircl
 import { News } from '../types';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
+import { useAppData } from '../context/AppDataContext';
 
 interface Props {
   news: News[];
@@ -33,7 +34,8 @@ const formatDate = (dateStr: string): string => {
   return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
 };
 
-const NewsPage: React.FC<Props> = ({ news }) => {
+const NewsPage: React.FC = () => {
+  const { news } = useAppData();
   const [showModal, setShowModal] = useState(false);
   const [sentStatus, setSentStatus] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);

@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Church, Image as ImageIcon, MapPin, X, Landmark, ExternalLink } from 'lucide-react';
 import { Temple } from '../types';
+import { useAppData } from '../context/AppDataContext';
 
 interface Props {
     temples: Temple[];
     posters: any[];
 }
 
-const PatrimonyPage: React.FC<Props> = ({ temples, posters }) => {
+const PatrimonyPage: React.FC = () => {
+    const { temples, posters } = useAppData();
     const [activeTab, setActiveTab] = useState<'temples' | 'posters'>('temples');
     const [selectedPoster, setSelectedPoster] = useState<string | null>(null);
 

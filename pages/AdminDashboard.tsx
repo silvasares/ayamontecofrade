@@ -7,6 +7,7 @@ import {
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
 import { Day, Temple, Band } from '../types';
+import { useAppData } from '../context/AppDataContext';
 import RouteMapSelector from '../components/RouteMapSelector';
 import PoisMapSelector from '../components/PoisMapSelector';
 
@@ -1256,7 +1257,17 @@ const NavItem = ({ to, icon, label, currentPath }: any) => {
   );
 };
 
-const AdminDashboard: React.FC<AdminProps> = (props) => {
+const AdminDashboard: React.FC<AdminProps> = () => {
+  const ctx = useAppData();
+  const props = {
+    updatePasos: ctx.refreshData,
+    updateNews: ctx.refreshData,
+    updateTemples: ctx.refreshData,
+    updateBands: ctx.refreshData,
+    updateDays: ctx.refreshData,
+    temples: ctx.temples,
+    days: ctx.days
+  };
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState("");
   const [visitCount, setVisitCount] = useState<string | null>(null);

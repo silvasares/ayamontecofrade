@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Clock, MapPin, ChevronLeft, Calendar, Navigation, Info, ChevronUp, ChevronDown } from 'lucide-react';
 import { Paso, Brotherhood } from '../types';
+import { useAppData } from '../context/AppDataContext';
 
 declare const L: any;
 
@@ -32,7 +33,8 @@ const AYAMONTE_COORDS: Record<string, [number, number]> = {
   "Calle Ahenas": [37.2150, -7.4050],
 };
 
-const MapPage: React.FC<MapProps> = ({ pasos, brotherhoods }) => {
+const MapPage: React.FC<MapProps> = () => {
+  const { pasos, brotherhoods } = useAppData();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const mapRef = useRef<HTMLDivElement>(null);

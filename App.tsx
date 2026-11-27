@@ -1,22 +1,25 @@
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import {
-  Calendar, Newspaper, Settings, Home, Bot, ChevronLeft, Sun, Moon,
+  Calendar, Newspaper, Settings, Home, Bot, ChevronLeft,
   ArrowUp, Bell, X, Volume2, VolumeX, CheckCircle as CheckIcon, AlertTriangle,
   Shield, Map, LogIn, MapPin, Navigation, Lock, Landmark, Power, Eye, EyeOff
 } from 'lucide-react';
-import PublicHome from './pages/PublicHome';
-import CalendarPage from './pages/CalendarPage';
-import PasoDetailPage from './pages/PasoDetailPage';
-import BrotherhoodPage from './pages/BrotherhoodPage';
-import NewsPage from './pages/NewsPage';
-import AdminDashboard from './pages/AdminDashboard';
-import PatrimonyPage from './pages/PatrimonyPage';
-import MapPage from './pages/MapPage';
-import AIAssistant from './pages/AIAssistant';
+const PublicHome = lazy(() => import('./pages/PublicHome'));
+const CalendarPage = lazy(() => import('./pages/CalendarPage'));
+const PasoDetailPage = lazy(() => import('./pages/PasoDetailPage'));
+const BrotherhoodPage = lazy(() => import('./pages/BrotherhoodPage'));
+const NewsPage = lazy(() => import('./pages/NewsPage'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const PatrimonyPage = lazy(() => import('./pages/PatrimonyPage'));
+const MapPage = lazy(() => import('./pages/MapPage'));
+const AIAssistant = lazy(() => import('./pages/AIAssistant'));
 import { supabase } from './supabase';
 import { Paso, News, Alert, Brotherhood, Day, Temple, Band } from './types';
+import PullToRefresh from './components/PullToRefresh';
+import { useAppData, AppDataProvider } from './context/AppDataContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const ALARM_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3';
 
@@ -113,9 +116,10 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: { isO
   );
 };
 
-const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
+const MobileHeader = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { soundEnabled, setSoundEnabled, headerTitle } = useAppData();
   const isRoot = ['/', '/calendar', '/news', '/patrimony'].includes(location.pathname);
   const [showExitConfirm, setShowExitConfirm] = useState(false);
 
@@ -257,7 +261,7 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
           </h1>
         </div>
 
-        <div className="w-8 flex justify-end items-center">
+        <div className="w-8 flex justify-end items-center gap-1">
           <button onClick={() => setShowExitConfirm(true)} className="p-1.5 rounded-full transition-colors active:bg-gray-100 dark:active:bg-white/10" title="Salir de la App">
             <Power size={16} className="text-gray-400" />
           </button>
@@ -267,8 +271,9 @@ const MobileHeader = ({ soundEnabled, setSoundEnabled, headerTitle }: any) => {
   );
 };
 
-const DesktopSidebar = ({ isOffSeason, onToggleOffSeason }: { isOffSeason: boolean; onToggleOffSeason: (val: boolean) => void }) => {
+const DesktopSidebar = () => {
   const location = useLocation();
+  const { isOffSeason, toggleOffSeason } = useAppData();
   const isActive = (path: string) => location.pathname === path;
   const [toggling, setToggling] = useState(false);
 
@@ -282,12 +287,7 @@ const DesktopSidebar = ({ isOffSeason, onToggleOffSeason }: { isOffSeason: boole
   const handleToggleVisibility = async () => {
     setToggling(true);
     const newVal = !isOffSeason;
-    try {
-      await supabase.from('app_settings').upsert({ key: 'off_season', value: newVal ? 'true' : 'false' });
-      onToggleOffSeason(newVal);
-    } catch (e) {
-      console.error('Error toggling visibility:', e);
-    }
+    await toggleOffSeason(newVal);
     setToggling(false);
   };
 
@@ -363,148 +363,49 @@ const AppContent = () => {
   const location = useLocation();
   const isAdmin = location.pathname.startsWith('/admin');
 
-
-  const [isOffSeason, setIsOffSeason] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(() => safeStorage.getItem('ac_sound', 'true') !== 'false');
-  const [pasos, setPasos] = useState<Paso[]>([]);
-  const [news, setNews] = useState<News[]>([]);
-  const [activeInAppAlerts, setActiveInAppAlerts] = useState<Alert[]>([]);
-  const [temples, setTemples] = useState<Temple[]>([]);
-  const [bands, setBands] = useState<Band[]>([]);
-  const [brotherhoods, setBrotherhoods] = useState<Brotherhood[]>([]);
-  const [days, setDays] = useState<any[]>([]);
-  const [posters, setPosters] = useState<any[]>([]);
-  const [headerTitle, setHeaderTitle] = useState("AYAMONTE COFRADE 2026");
-
-  const fetchData = async () => {
-    try {
-      const nowISO = new Date().toISOString();
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-      const { data: alertItems } = await supabase
-        .from('alerts')
-        .select('*')
-        .lte('scheduled_at', nowISO)
-        .gte('scheduled_at', twentyFourHoursAgo)
-        .order('scheduled_at', { ascending: false });
-
-      if (alertItems) {
-        const readIds = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]'));
-        setActiveInAppAlerts(alertItems.filter(a => !readIds.includes(a.id)));
-      }
-
-      // 1. Fetch Brotherhoods first to use as reference data
-      const { data: brotherhoodItems } = await supabase.from('hermandades').select('*').order('order_index', { ascending: true });
-
-      let processedBrotherhoods: Brotherhood[] = [];
-      if (brotherhoodItems) {
-        processedBrotherhoods = brotherhoodItems.map(b => ({
-          ...b,
-          startTime: typeof b.start_time === 'string' ? b.start_time.substring(0, 5) : b.start_time,
-          arrivalTime: typeof b.arrival_time === 'string' ? b.arrival_time.substring(0, 5) : b.arrival_time
-        }));
-        setBrotherhoods(processedBrotherhoods);
-      }
-
-      // 2. Fetch Steps and Enrich with Brotherhood data
-      const { data: steps } = await supabase.from('pasos').select('*').order('order_index', { ascending: true });
-      if (steps) {
-        setPasos(steps.map(s => {
-          const b = processedBrotherhoods.find(br => br.id === s.brotherhood_id);
-          // Only fallback if the specific paso time is missing
-          const fallbackStart = b?.startTime;
-          const fallbackEnd = b?.arrivalTime;
-
-          return {
-            ...s,
-            mainImage: s.main_image,
-            foundationYear: s.foundation_year,
-            // Use specific time, or fallback to brotherhood time
-            startTime: s.start_time?.substring(0, 5) || fallbackStart,
-            arrivalTime: s.arrival_time?.substring(0, 5) || fallbackEnd
-          };
-        }));
-      }
-
-      const { data: newsItems } = await supabase.from('news').select('*').order('published_at', { ascending: true });
-      if (newsItems) setNews(newsItems.map(n => ({ ...n, publishedAt: n.published_at })));
-
-      const { data: templeItems } = await supabase.from('temples').select('*');
-      if (templeItems) setTemples(templeItems);
-
-      const { data: bandItems } = await supabase.from('bands').select('*');
-      if (bandItems) setBands(bandItems);
-
-      // (Brotherhoods already fetched)
-
-      const { data: dayItems } = await supabase.from('days').select('*').order('order_index');
-      if (dayItems) setDays(dayItems);
-
-      const { data: posterItems } = await supabase.from('posters').select('*').order('year', { ascending: false });
-      if (posterItems) setPosters(posterItems);
-
-      const { data: settingsData } = await supabase.from('app_settings').select('value').eq('key', 'header_title').single();
-      if (settingsData) setHeaderTitle(settingsData.value);
-
-      const { data: offSeasonData } = await supabase.from('app_settings').select('value').eq('key', 'off_season').maybeSingle();
-      if (offSeasonData) {
-        setIsOffSeason(offSeasonData.value === 'true');
-      } else {
-        setIsOffSeason(true);
-      }
-
-    } catch (err) { console.error(err); }
-  };
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 60000);
-
-    // Incrementar contador de visitas
-    const incrementVisits = async () => {
-      // No contar si estamos en el panel de admin
-      if (window.location.hash.includes('/admin')) return;
-
-      // Evitar contar varias veces en la misma sesión/pestaña
-      if (sessionStorage.getItem('ac_visit_counted')) return;
-
-      try {
-        const { error } = await supabase.rpc('increment_visit_count');
-        if (!error) sessionStorage.setItem('ac_visit_counted', 'true');
-      } catch (e) {
-        console.warn('Error incrementing visits:', e);
-      }
-    };
-    incrementVisits();
-
-    // Forzar modo oscuro siempre
-    document.documentElement.classList.add('dark');
-
-    safeStorage.setItem('ac_sound', soundEnabled.toString());
-    return () => clearInterval(interval);
-  }, [soundEnabled]);
+  const {
+    isOffSeason,
+    pasos,
+    news,
+    activeInAppAlerts,
+    temples,
+    bands,
+    brotherhoods,
+    days,
+    posters,
+    headerTitle,
+    soundEnabled,
+    setSoundEnabled,
+    setActiveInAppAlerts,
+    fetchData,
+    refreshData
+  } = useAppData();
 
   return (
     <div className="min-h-screen bg-luxuryWhite dark:bg-[#0A0A0A] flex flex-col transition-all duration-500">
       <InAppAlertModal alerts={activeInAppAlerts} onRead={(id) => { const read = JSON.parse(safeStorage.getItem('ac_read_alerts', '[]')); safeStorage.setItem('ac_read_alerts', JSON.stringify([...read, id])); setActiveInAppAlerts(prev => prev.filter(a => a.id !== id)); }} soundEnabled={soundEnabled} />
 
-      {!isAdmin && <DesktopSidebar isOffSeason={isOffSeason} onToggleOffSeason={(val) => setIsOffSeason(val)} />}
-      <MobileHeader soundEnabled={soundEnabled} setSoundEnabled={setSoundEnabled} headerTitle={headerTitle} />
+      {!isAdmin && <DesktopSidebar />}
+      <MobileHeader />
 
       <main className={`flex-grow ${isAdmin ? '' : `lg:ml-72 pt-12 pb-16 md:pb-0`}`}>
-        <PageTransition>
-          <Routes>
-            <Route path="/" element={isOffSeason ? <Navigate to="/patrimony" replace /> : <PublicHome pasos={pasos} news={news} defaultCover="" departureStatus="" brotherhoods={brotherhoods} days={days} />} />
-            <Route path="/calendar" element={<CalendarPage pasos={pasos} days={days} brotherhoods={brotherhoods} />} />
-            <Route path="/paso/:id" element={<PasoDetailPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
-            <Route path="/brotherhood/:name" element={<BrotherhoodPage pasos={pasos} temples={temples} bands={bands} brotherhoods={brotherhoods} />} />
-            <Route path="/news" element={<NewsPage news={news} />} />
-            <Route path="/patrimony" element={<PatrimonyPage temples={temples} posters={posters} />} />
-            <Route path="/map/:id" element={<MapPage pasos={pasos} brotherhoods={brotherhoods} />} />
-            <Route path="/assistant" element={<AIAssistant brotherhoods={brotherhoods} pasos={pasos} days={days} />} />
-            <Route path="/admin/*" element={<AdminDashboard updatePasos={fetchData} updateNews={fetchData} temples={temples} updateTemples={fetchData} updateBands={fetchData} updateDays={fetchData} days={days} />} />
-          </Routes>
-        </PageTransition>
+        <PullToRefresh onRefresh={fetchData}>
+          <PageTransition>
+            <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#D4AF37]" /></div>}>
+<Routes>
+              <Route path="/" element={isOffSeason ? <Navigate to="/patrimony" replace /> : <PublicHome />} />
+              <Route path="/calendar" element={<CalendarPage />} />
+              <Route path="/paso/:id" element={<PasoDetailPage />} />
+              <Route path="/brotherhood/:name" element={<BrotherhoodPage />} />
+              <Route path="/news" element={<NewsPage />} />
+              <Route path="/patrimony" element={<PatrimonyPage />} />
+              <Route path="/map/:id" element={<MapPage />} />
+              <Route path="/assistant" element={<AIAssistant />} />
+              <Route path="/admin/*" element={<AdminDashboard />} />
+            </Routes>
+             </Suspense>
+          </PageTransition>
+        </PullToRefresh>
       </main>
 
       {!isAdmin && (
@@ -556,7 +457,11 @@ const App = () => (
   <HashRouter>
     <ScrollToTop />
     <InstallPWA />
-    <AppContent />
+    <AppDataProvider>
+      <ErrorBoundary>
+        <AppContent />
+      </ErrorBoundary>
+    </AppDataProvider>
   </HashRouter>
 );
 

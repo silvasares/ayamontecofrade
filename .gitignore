@@ -33,3 +33,5 @@ test-*.mjs
 list-models.mjs
 temp_*
 [full_path_of_file_*]
+
+.vercel

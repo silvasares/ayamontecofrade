@@ -6,6 +6,7 @@ import {
     Cross, Crown, Sparkles, Shirt, Map as MapIcon, Loader2, Music, User, Tag, History, X, ExternalLink
 } from 'lucide-react';
 import { Paso, Temple, Brotherhood } from '../types';
+import { useAppData } from '../context/AppDataContext';
 import { supabase } from '../supabase';
 
 interface Props {
@@ -104,7 +105,8 @@ const RouteViewer = ({ coords, pois }: { coords: [number, number][], pois?: any[
     return <div ref={mapContainerRef} className="w-full h-full force-light-map" />;
 };
 
-const BrotherhoodPage: React.FC<Props> = ({ pasos, temples, bands, brotherhoods }) => {
+const BrotherhoodPage: React.FC<Props> = () => {
+  const { pasos, temples, bands, brotherhoods } = useAppData();
     const { name } = useParams<{ name: string }>();
     const navigate = useNavigate();
     const decodedName = decodeURIComponent(name || '');

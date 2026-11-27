@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+.vercel
+.github
+__tests__
+*.log
+check-ai.mjs
