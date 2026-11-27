@@ -60,7 +60,7 @@ export const AppDataProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [brotherhoods, setBrotherhoods] = useState<Brotherhood[]>([]);
   const [days, setDays] = useState<DaySchedule[]>([]);
   const [posters, setPosters] = useState<any[]>([]);
-  const [headerTitle, setHeaderTitle] = useState("AYAMONTE COFRADE 2026");
+  const [headerTitle, setHeaderTitle] = useState("AYAMONTE COFRADE 2027");
 
   const fetchData = useCallback(async () => {
     try {

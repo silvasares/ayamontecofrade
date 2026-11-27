@@ -21,7 +21,7 @@ interface AdminProps {
   days: any[];
 }
 
-const ADMIN_PIN = "2026";
+const ADMIN_PIN = "2027";
 
 const INPUT_STYLE = "w-full p-3 bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-gray-800 rounded-xl outline-none font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-[#D4AF37] transition-all text-sm";
 const LABEL_STYLE = "text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 ml-1 mb-1 block tracking-widest";
@@ -71,7 +71,7 @@ create table if not exists app_settings (
   key text primary key,
   value text
 );
-insert into app_settings (key, value) values ('header_title', 'AYAMONTE COFRADE 2026') on conflict do nothing;
+insert into app_settings (key, value) values ('header_title', 'AYAMONTE COFRADE 2027') on conflict do nothing;
 
 -- Corregir publicación de realtime (evita error 42710 si ya existe)
 do $$
@@ -1132,7 +1132,7 @@ const MessageManager = () => {
 
 // --- CONFIGURACIÓN GENERAL ---
 const SettingsManager = () => {
-  const [title, setTitle] = useState("AYAMONTE COFRADE 2026");
+  const [title, setTitle] = useState("AYAMONTE COFRADE 2027");
   const [visitCount, setVisitCount] = useState("0");
   const [offSeason, setOffSeason] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -1196,7 +1196,7 @@ const SettingsManager = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-gray-50 dark:bg-black border border-gray-200 dark:border-gray-800 p-4 pl-12 rounded-2xl font-bold text-lg outline-none focus:ring-2 focus:ring-purpleCofrade"
-              placeholder="Ej: AYAMONTE COFRADE 2026"
+              placeholder="Ej: AYAMONTE COFRADE 2027"
             />
           </div>
         </div>
