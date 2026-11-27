@@ -353,7 +353,7 @@ const DesktopSidebar = () => {
       </div>
 
       <div className="px-6 py-3 text-center border-t border-gray-100 dark:border-white/5">
-        <p className="text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest font-medium">Semana Santa 2025</p>
+        <p className="text-[10px] text-gray-300 dark:text-gray-600 uppercase tracking-widest font-medium">Semana Santa 2027</p>
       </div>
     </aside>
   );
